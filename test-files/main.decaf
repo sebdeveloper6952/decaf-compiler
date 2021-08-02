@@ -1,0 +1,19 @@
+class Program
+{
+	void main(void)
+	{
+		int i;
+		boolean t;
+
+        t = true;
+
+        i = 2 + 3 * 5;
+
+		cmp(1, 2);
+    }
+
+	boolean cmp(int a, int b)
+	{
+		return a == b;
+	}
+}
