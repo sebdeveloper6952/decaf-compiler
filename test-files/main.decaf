@@ -1,5 +1,16 @@
-class Program
+class Program 
 {
+	struct Car
+	{
+		int doors;
+		int cylinders;
+	};
+
+	boolean cmp(int a, int b)
+	{
+		return a == b;
+	}
+
 	void main(void)
 	{
 		int i;
@@ -11,9 +22,4 @@ class Program
 
 		cmp(1, 2);
     }
-
-	boolean cmp(int a, int b)
-	{
-		return a == b;
-	}
 }

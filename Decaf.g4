@@ -26,7 +26,7 @@ FALSE: 'false';
  * Parser Rules
  */
 
-program: 'class' 'Program' '{' (declaration)* '}';
+program: 'class' 'Program' '{' (declaration)* '}' EOF;
 
 declaration:
 	structDeclaration	# structDecl

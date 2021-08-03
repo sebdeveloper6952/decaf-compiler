@@ -8,12 +8,11 @@
 #include "DecafBaseListener.h"
 #include "CustomListener.h"
 
-using namespace std;
 using namespace antlr4;
 
 int main(int argc, const char *argv[])
 {
-    ifstream stream;
+    std::ifstream stream;
 
     // TODO: validate argv length
     // open file specified.
@@ -27,6 +26,13 @@ int main(int argc, const char *argv[])
     DecafLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
 
+    // TODO: remove, only for debugging.
+    tokens.fill();
+    for (antlr4::Token *token : tokens.getTokens())
+    {
+        std::cout << token->toString() << std::endl;
+    }
+
     // Create a parser which parses the token stream
     DecafParser parser(&tokens);
 
@@ -38,9 +44,9 @@ int main(int argc, const char *argv[])
     tree::ParseTreeWalker::DEFAULT.walk(&custom_listener, tree);
 
     // visitor pattern
-    // DecafParser::ProgramContext *ctx = parser.program();
-    // DecafBaseVisitor visitor;
-    // visitor.visitProgram(ctx);
+    DecafParser::ProgramContext *ctx = parser.program();
+    DecafBaseVisitor visitor;
+    visitor.visitProgram(ctx);
 
     return 0;
 }
