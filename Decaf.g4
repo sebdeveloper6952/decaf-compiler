@@ -11,6 +11,15 @@ fragment ALPHA_NUM: ALPHA | DIGIT;
 
 fragment LETTER: [a-zA-Z];
 
+CLASS: 'class';
+PROGRAM: 'Program';
+STRUCT: 'struct';
+TRUE: 'true';
+FALSE: 'false';
+IF: 'if';
+ELSE: 'else';
+VOID: 'void';
+
 ID: ALPHA ALPHA_NUM*;
 
 NUM: DIGIT DIGIT*;
@@ -18,9 +27,6 @@ NUM: DIGIT DIGIT*;
 APOSTROPHE: '\'';
 
 CHAR_LITERAL: APOSTROPHE (LETTER | [\\\t\n]) APOSTROPHE;
-
-TRUE: 'true';
-FALSE: 'false';
 
 /*
  * Parser Rules

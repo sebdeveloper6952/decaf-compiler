@@ -38,7 +38,17 @@ bool SymbolTable::put(std::string const &id, std::string const &type)
 
 SymbolTableEntry *SymbolTable::get(std::string const &id)
 {
-    return this->table[id];
+    SymbolTable *top = this;
+    while (top != NULL)
+    {
+        std::cout << "searching " << id << " in " << top->get_name() << std::endl;
+
+        if (top->table.count(id) > 0)
+            return top->table[id];
+        top = top->parent;
+    }
+
+    return NULL;
 }
 
 bool SymbolTable::rm(std::string const &id)

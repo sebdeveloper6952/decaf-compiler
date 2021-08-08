@@ -46,7 +46,7 @@ int main(int argc, const char *argv[])
     // tree::ParseTreeWalker::DEFAULT.walk(&custom_listener, tree);
 
     // SymbolTable declaration
-    SymbolTable *table = new SymbolTable(nullptr, "global");
+    SymbolTable *table = new SymbolTable(NULL, "global");
 
     // walk the tree
     SymbolTableListener st_listener(table);

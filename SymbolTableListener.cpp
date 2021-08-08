@@ -47,6 +47,26 @@ void SymbolTableListener::enterVarDeclaration(DecafParser::VarDeclarationContext
 }
 
 // Finish new var declaration
-void SymbolTableListener::exitVarDeclaration(DecafParser::VarDeclarationContext *ctx)
+void SymbolTableListener::exitVarDeclaration(DecafParser::VarDeclarationContext *ctx) {}
+
+// location
+void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
 {
+    std::string id = ctx->ID()->getText();
+    std::cout << "enterLocation: " << id << std::endl;
+
+    SymbolTableEntry *entry = this->table->get(id);
+    if (entry == NULL)
+    {
+        std::cout << id << " not found" << std::endl;
+    }
+    else
+    {
+        std::cout << id << " was found" << std::endl;
+    }
+}
+
+void SymbolTableListener::exitLocation(DecafParser::LocationContext *ctx)
+{
+    std::cout << "exitLocation" << std::endl;
 }

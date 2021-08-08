@@ -16,9 +16,9 @@ public:
     T__7 = 8, T__8 = 9, T__9 = 10, T__10 = 11, T__11 = 12, T__12 = 13, T__13 = 14, 
     T__14 = 15, T__15 = 16, T__16 = 17, T__17 = 18, T__18 = 19, T__19 = 20, 
     T__20 = 21, T__21 = 22, T__22 = 23, T__23 = 24, T__24 = 25, T__25 = 26, 
-    T__26 = 27, T__27 = 28, T__28 = 29, T__29 = 30, T__30 = 31, T__31 = 32, 
-    T__32 = 33, T__33 = 34, T__34 = 35, T__35 = 36, ID = 37, NUM = 38, APOSTROPHE = 39, 
-    CHAR_LITERAL = 40, TRUE = 41, FALSE = 42, WHITESPACE = 43
+    T__26 = 27, T__27 = 28, T__28 = 29, T__29 = 30, CLASS = 31, PROGRAM = 32, 
+    STRUCT = 33, TRUE = 34, FALSE = 35, IF = 36, ELSE = 37, VOID = 38, ID = 39, 
+    NUM = 40, APOSTROPHE = 41, CHAR_LITERAL = 42, WHITESPACE = 43
   };
 
   enum {
@@ -67,6 +67,8 @@ public:
   public:
     ProgramContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *CLASS();
+    antlr4::tree::TerminalNode *PROGRAM();
     antlr4::tree::TerminalNode *EOF();
     std::vector<DeclarationContext *> declaration();
     DeclarationContext* declaration(size_t i);
@@ -118,6 +120,7 @@ public:
   public:
     StructDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *STRUCT();
     antlr4::tree::TerminalNode *ID();
     std::vector<VarDeclarationContext *> varDeclaration();
     VarDeclarationContext* varDeclaration(size_t i);
@@ -135,8 +138,10 @@ public:
   public:
     VarTypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *STRUCT();
     antlr4::tree::TerminalNode *ID();
     StructDeclarationContext *structDeclaration();
+    antlr4::tree::TerminalNode *VOID();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -154,6 +159,7 @@ public:
     MethodTypeContext *methodType();
     antlr4::tree::TerminalNode *ID();
     BlockContext *block();
+    antlr4::tree::TerminalNode *VOID();
     std::vector<ParameterContext *> parameter();
     ParameterContext* parameter(size_t i);
 
@@ -170,6 +176,7 @@ public:
   public:
     MethodTypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *VOID();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -232,9 +239,11 @@ public:
   public:
     StatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *IF();
     ExpressionContext *expression();
     std::vector<BlockContext *> block();
     BlockContext* block(size_t i);
+    antlr4::tree::TerminalNode *ELSE();
     MethodCallContext *methodCall();
     LocationContext *location();
 

@@ -21,4 +21,6 @@ public:
     virtual void exitVarDeclaration(DecafParser::VarDeclarationContext *ctx);
     virtual void enterBlock(DecafParser::BlockContext *ctx);
     virtual void exitBlock(DecafParser::BlockContext *ctx);
+    virtual void enterLocation(DecafParser::LocationContext *ctx);
+    virtual void exitLocation(DecafParser::LocationContext *ctx);
 };
