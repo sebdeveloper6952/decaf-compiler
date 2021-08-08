@@ -19,23 +19,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitStructDecl(DecafParser::StructDeclContext *ctx) override {
+  virtual antlrcpp::Any visitDeclaration(DecafParser::DeclarationContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitVarDecl(DecafParser::VarDeclContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitMethodDecl(DecafParser::MethodDeclContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitNormalDecl(DecafParser::NormalDeclContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitArrayDecl(DecafParser::ArrayDeclContext *ctx) override {
+  virtual antlrcpp::Any visitVarDeclaration(DecafParser::VarDeclarationContext *ctx) override {
     return visitChildren(ctx);
   }
 

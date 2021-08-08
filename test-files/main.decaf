@@ -1,11 +1,7 @@
 class Program 
 {
-	struct Car
-	{
-		int doors;
-		int cylinders;
-	};
-
+	int a;
+	
 	boolean cmp(int a, int b)
 	{
 		return a == b;

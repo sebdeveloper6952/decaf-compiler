@@ -19,20 +19,11 @@ public:
   virtual void enterProgram(DecafParser::ProgramContext * /*ctx*/) override { }
   virtual void exitProgram(DecafParser::ProgramContext * /*ctx*/) override { }
 
-  virtual void enterStructDecl(DecafParser::StructDeclContext * /*ctx*/) override { }
-  virtual void exitStructDecl(DecafParser::StructDeclContext * /*ctx*/) override { }
+  virtual void enterDeclaration(DecafParser::DeclarationContext * /*ctx*/) override { }
+  virtual void exitDeclaration(DecafParser::DeclarationContext * /*ctx*/) override { }
 
-  virtual void enterVarDecl(DecafParser::VarDeclContext * /*ctx*/) override { }
-  virtual void exitVarDecl(DecafParser::VarDeclContext * /*ctx*/) override { }
-
-  virtual void enterMethodDecl(DecafParser::MethodDeclContext * /*ctx*/) override { }
-  virtual void exitMethodDecl(DecafParser::MethodDeclContext * /*ctx*/) override { }
-
-  virtual void enterNormalDecl(DecafParser::NormalDeclContext * /*ctx*/) override { }
-  virtual void exitNormalDecl(DecafParser::NormalDeclContext * /*ctx*/) override { }
-
-  virtual void enterArrayDecl(DecafParser::ArrayDeclContext * /*ctx*/) override { }
-  virtual void exitArrayDecl(DecafParser::ArrayDeclContext * /*ctx*/) override { }
+  virtual void enterVarDeclaration(DecafParser::VarDeclarationContext * /*ctx*/) override { }
+  virtual void exitVarDeclaration(DecafParser::VarDeclarationContext * /*ctx*/) override { }
 
   virtual void enterStructDeclaration(DecafParser::StructDeclarationContext * /*ctx*/) override { }
   virtual void exitStructDeclaration(DecafParser::StructDeclarationContext * /*ctx*/) override { }

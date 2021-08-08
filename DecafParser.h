@@ -83,47 +83,16 @@ public:
   class  DeclarationContext : public antlr4::ParserRuleContext {
   public:
     DeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-   
-    DeclarationContext() = default;
-    void copyFrom(DeclarationContext *context);
-    using antlr4::ParserRuleContext::copyFrom;
-
     virtual size_t getRuleIndex() const override;
-
-   
-  };
-
-  class  MethodDeclContext : public DeclarationContext {
-  public:
-    MethodDeclContext(DeclarationContext *ctx);
-
-    MethodDeclarationContext *methodDeclaration();
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  StructDeclContext : public DeclarationContext {
-  public:
-    StructDeclContext(DeclarationContext *ctx);
-
     StructDeclarationContext *structDeclaration();
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  VarDeclContext : public DeclarationContext {
-  public:
-    VarDeclContext(DeclarationContext *ctx);
-
     VarDeclarationContext *varDeclaration();
+    MethodDeclarationContext *methodDeclaration();
+
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
   };
 
   DeclarationContext* declaration();
@@ -131,39 +100,16 @@ public:
   class  VarDeclarationContext : public antlr4::ParserRuleContext {
   public:
     VarDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-   
-    VarDeclarationContext() = default;
-    void copyFrom(VarDeclarationContext *context);
-    using antlr4::ParserRuleContext::copyFrom;
-
     virtual size_t getRuleIndex() const override;
-
-   
-  };
-
-  class  NormalDeclContext : public VarDeclarationContext {
-  public:
-    NormalDeclContext(VarDeclarationContext *ctx);
-
-    VarTypeContext *varType();
-    antlr4::tree::TerminalNode *ID();
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  ArrayDeclContext : public VarDeclarationContext {
-  public:
-    ArrayDeclContext(VarDeclarationContext *ctx);
-
     VarTypeContext *varType();
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *NUM();
+
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
   };
 
   VarDeclarationContext* varDeclaration();

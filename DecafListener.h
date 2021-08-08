@@ -17,20 +17,11 @@ public:
   virtual void enterProgram(DecafParser::ProgramContext *ctx) = 0;
   virtual void exitProgram(DecafParser::ProgramContext *ctx) = 0;
 
-  virtual void enterStructDecl(DecafParser::StructDeclContext *ctx) = 0;
-  virtual void exitStructDecl(DecafParser::StructDeclContext *ctx) = 0;
+  virtual void enterDeclaration(DecafParser::DeclarationContext *ctx) = 0;
+  virtual void exitDeclaration(DecafParser::DeclarationContext *ctx) = 0;
 
-  virtual void enterVarDecl(DecafParser::VarDeclContext *ctx) = 0;
-  virtual void exitVarDecl(DecafParser::VarDeclContext *ctx) = 0;
-
-  virtual void enterMethodDecl(DecafParser::MethodDeclContext *ctx) = 0;
-  virtual void exitMethodDecl(DecafParser::MethodDeclContext *ctx) = 0;
-
-  virtual void enterNormalDecl(DecafParser::NormalDeclContext *ctx) = 0;
-  virtual void exitNormalDecl(DecafParser::NormalDeclContext *ctx) = 0;
-
-  virtual void enterArrayDecl(DecafParser::ArrayDeclContext *ctx) = 0;
-  virtual void exitArrayDecl(DecafParser::ArrayDeclContext *ctx) = 0;
+  virtual void enterVarDeclaration(DecafParser::VarDeclarationContext *ctx) = 0;
+  virtual void exitVarDeclaration(DecafParser::VarDeclarationContext *ctx) = 0;
 
   virtual void enterStructDeclaration(DecafParser::StructDeclarationContext *ctx) = 0;
   virtual void exitStructDeclaration(DecafParser::StructDeclarationContext *ctx) = 0;

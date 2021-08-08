@@ -29,13 +29,11 @@ FALSE: 'false';
 program: 'class' 'Program' '{' (declaration)* '}' EOF;
 
 declaration:
-	structDeclaration	# structDecl
-	| varDeclaration	# varDecl
-	| methodDeclaration	# methodDecl;
+	structDeclaration
+	| varDeclaration
+	| methodDeclaration;
 
-varDeclaration:
-	varType ID ';'					# normalDecl
-	| varType ID '[' NUM ']' ';'	# arrayDecl;
+varDeclaration: varType ID ';' | varType ID '[' NUM ']' ';';
 
 structDeclaration: 'struct' ID '{' (varDeclaration)* '}' ';';
 
