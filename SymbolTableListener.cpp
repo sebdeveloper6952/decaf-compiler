@@ -12,26 +12,33 @@ SymbolTableListener::SymbolTableListener(SymbolTable *table)
 // Enter a new block
 void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
 {
-    this->num_tables++;
+    // push a new symbol table for this block
+    this->push_table();
 
-    // push a new table
-    std::string new_name = "table_" + std::to_string(this->num_tables);
-    SymbolTable *new_top = new SymbolTable(this->table, new_name);
-    this->table = new_top;
-
-    std::cout << "push() " << this->table->get_name() << std::endl;
+    // if this node parent is a methodDeclaration, handle its parameters
+    // as if they were local variables of this block
+    if (ctx->parent != NULL)
+    {
+        DecafParser::MethodDeclarationContext *p = (DecafParser::MethodDeclarationContext *)ctx->parent;
+        std::vector<DecafParser::ParameterContext *> params = p->parameter();
+        if (params.size())
+        {
+            std::cout << "put() params: ";
+            for (DecafParser::ParameterContext *p : params)
+            {
+                this->table->put(
+                    p->ID()->getText(),
+                    p->parameterType()->getText());
+            }
+            std::cout << std::endl;
+        }
+    }
 }
 
 // exit the current block
 void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
 {
-    // pop the top table
-    SymbolTable *old = this->table;
-    this->table = this->table->get_parent();
-
-    std::cout << "pop() " << old->get_name() << std::endl;
-    old->print_table();
-    std::cout << "-------------------------------" << std::endl;
+    this->pop_table();
 }
 
 // New var declaration
@@ -66,7 +73,33 @@ void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
     }
 }
 
-void SymbolTableListener::exitLocation(DecafParser::LocationContext *ctx)
+void SymbolTableListener::exitLocation(DecafParser::LocationContext *ctx) {}
+
+// Method declaration
+void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) {}
+void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) {}
+
+// Auxiliary methods.
+void SymbolTableListener::push_table()
 {
-    std::cout << "exitLocation" << std::endl;
+    // push a new table
+    SymbolTable *new_top =
+        new SymbolTable(this->table, "table_" + std::to_string(this->num_tables++));
+    this->table = new_top;
+
+    std::cout << "------------------ "
+              << "push() " << this->table->get_name()
+              << " ------------------"
+              << std::endl;
+}
+
+void SymbolTableListener::pop_table()
+{
+    // pop the top table
+    SymbolTable *old = this->table;
+    this->table = this->table->get_parent();
+
+    std::cout << "pop() " << old->get_name() << std::endl;
+    old->print_table();
+    std::cout << "----------------------------------------------------" << std::endl;
 }

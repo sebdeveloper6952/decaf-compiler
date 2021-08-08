@@ -14,6 +14,8 @@ class SymbolTableListener : public DecafBaseListener
 private:
     SymbolTable *table;
     size_t num_tables = 0;
+    void push_table();
+    void pop_table();
 
 public:
     SymbolTableListener(SymbolTable *table);
@@ -23,4 +25,6 @@ public:
     virtual void exitBlock(DecafParser::BlockContext *ctx);
     virtual void enterLocation(DecafParser::LocationContext *ctx);
     virtual void exitLocation(DecafParser::LocationContext *ctx);
+    virtual void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
+    virtual void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
 };
