@@ -1,7 +1,6 @@
 class Program 
 {
 	int a;
-	boolean a;
 
 	boolean cmp(int a, int b)
 	{
@@ -19,6 +18,8 @@ class Program
         t = true;
 
         i = 2 + 3 * 5;
+
+		i = b + 2;
 
 		cmp(1, 2);
     }

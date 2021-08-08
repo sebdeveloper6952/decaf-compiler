@@ -72,7 +72,10 @@ void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
     SymbolTableEntry *entry = this->table->get(id);
     if (entry == NULL)
     {
-        std::cout << id << " not found" << std::endl;
+        std::cout << "error: id ("
+                  << id
+                  << ") no declaration found."
+                  << std::endl;
     }
     else
     {
