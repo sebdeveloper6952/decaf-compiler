@@ -1,10 +1,14 @@
 class Program 
 {
 	int a;
+	boolean a;
 
 	boolean cmp(int a, int b)
 	{
-		return a == b;
+		boolean c;
+		c = a == b;
+
+		return c;
 	}
 
 	void main(void)

@@ -22,6 +22,9 @@ std::string const &SymbolTable::get_name()
 
 bool SymbolTable::put(std::string const &id, std::string const &type)
 {
+    if (this->table.find(id) != this->table.end())
+        return false;
+
     SymbolTableEntry *entry = new SymbolTableEntry(id, type, this->offset);
     this->table[id] = entry;
 

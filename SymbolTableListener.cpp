@@ -47,8 +47,15 @@ void SymbolTableListener::enterVarDeclaration(DecafParser::VarDeclarationContext
     DecafParser::VarTypeContext *var_type = ctx->varType();
     antlr4::tree::TerminalNode *id = ctx->ID();
 
-    this->table->put(id->getText(), var_type->getText());
-    SymbolTableEntry *entry = this->table->get(id->getText());
+    if (!this->table->put(id->getText(), var_type->getText()))
+    {
+        std::cout << "error: varDeclaration id ("
+                  << id->getText()
+                  << ") is already declared."
+                  << std::endl;
+
+        return;
+    }
 
     std::cout << this->table->get_name() << "->push(): " << id->getText() << std::endl;
 }
