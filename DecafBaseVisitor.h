@@ -35,11 +35,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) override {
+  virtual antlrcpp::Any visitMethodType(DecafParser::MethodTypeContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitMethodType(DecafParser::MethodTypeContext *ctx) override {
+  virtual antlrcpp::Any visitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) override {
     return visitChildren(ctx);
   }
 

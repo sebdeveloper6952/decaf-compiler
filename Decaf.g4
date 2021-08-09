@@ -51,11 +51,10 @@ varType:
 	| structDeclaration
 	| 'void';
 
-methodDeclaration:
-	methodType ID '(' 'void'? ')' block
-	| methodType ID '(' parameter ')' block
-	| methodType ID '(' parameter (',' parameter)+ ')' block;
 methodType: 'int' | 'char' | 'boolean' | 'void';
+methodDeclaration:
+	methodType ID '()' block
+	| methodType ID '(' (parameter (',' parameter)*)? ')' block;
 
 parameter: parameterType ID;
 

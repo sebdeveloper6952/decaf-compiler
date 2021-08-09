@@ -19,8 +19,6 @@ class Program
 
         i = 2 + 3 * 5;
 
-		i = b + 2;
-
 		cmp(1, 2);
     }
 }

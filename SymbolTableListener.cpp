@@ -3,6 +3,7 @@
 #include "SymbolTableListener.h"
 #include "SymbolTable.h"
 #include "SymbolTableListener.h"
+#include "DataTypes.h"
 
 SymbolTableListener::SymbolTableListener(SymbolTable *table)
 {
@@ -27,6 +28,7 @@ void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
             for (DecafParser::ParameterContext *p : params)
             {
                 this->table->put(
+                    S_DATA,
                     p->ID()->getText(),
                     p->parameterType()->getText());
             }
@@ -47,7 +49,7 @@ void SymbolTableListener::enterVarDeclaration(DecafParser::VarDeclarationContext
     DecafParser::VarTypeContext *var_type = ctx->varType();
     antlr4::tree::TerminalNode *id = ctx->ID();
 
-    if (!this->table->put(id->getText(), var_type->getText()))
+    if (!this->table->put(S_DATA, id->getText(), var_type->getText()))
     {
         std::cout << "error: varDeclaration id ("
                   << id->getText()
@@ -86,8 +88,34 @@ void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
 void SymbolTableListener::exitLocation(DecafParser::LocationContext *ctx) {}
 
 // Method declaration
-void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) {}
+void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx)
+{
+    std::string method_type = ctx->methodType()->getText();
+    std::string id = ctx->ID()->getText();
+    if (this->table->put(S_METHOD, id, method_type))
+    {
+        std::cout << "methodDeclaration saved in symbol table: "
+                  << method_type
+                  << "|"
+                  << id
+                  << std::endl;
+    }
+}
+
 void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) {}
+
+// ------------------------------------------ Private auxiliary methods -----------------------------------------_
+// Node Type association
+void SymbolTableListener::put_node_type(antlr4::tree::ParseTree *node, int type)
+{
+    this->node_types.put(node, type);
+}
+
+void SymbolTableListener::get_node_type(antlr4::tree::ParseTree *node)
+{
+    auto t = this->node_types.get(node);
+    std::cout << "Node type: " << t << std::endl;
+}
 
 // Auxiliary methods.
 void SymbolTableListener::push_table()
@@ -109,7 +137,7 @@ void SymbolTableListener::pop_table()
     SymbolTable *old = this->table;
     this->table = this->table->get_parent();
 
-    std::cout << "pop() " << old->get_name() << std::endl;
+    std::cout << "pop(): " << old->get_name() << " | contents:" << std::endl;
     old->print_table();
     std::cout << "----------------------------------------------------" << std::endl;
 }

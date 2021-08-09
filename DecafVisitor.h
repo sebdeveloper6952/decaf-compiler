@@ -29,9 +29,9 @@ public:
 
     virtual antlrcpp::Any visitVarType(DecafParser::VarTypeContext *context) = 0;
 
-    virtual antlrcpp::Any visitMethodDeclaration(DecafParser::MethodDeclarationContext *context) = 0;
-
     virtual antlrcpp::Any visitMethodType(DecafParser::MethodTypeContext *context) = 0;
+
+    virtual antlrcpp::Any visitMethodDeclaration(DecafParser::MethodDeclarationContext *context) = 0;
 
     virtual antlrcpp::Any visitParameter(DecafParser::ParameterContext *context) = 0;
 

@@ -16,6 +16,7 @@ private:
     size_t num_tables = 0;
     void push_table();
     void pop_table();
+    antlr4::tree::ParseTreeProperty<int> node_types;
 
 public:
     SymbolTableListener(SymbolTable *table);
@@ -27,4 +28,6 @@ public:
     virtual void exitLocation(DecafParser::LocationContext *ctx);
     virtual void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
     virtual void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
+    void put_node_type(antlr4::tree::ParseTree *node, int type);
+    void get_node_type(antlr4::tree::ParseTree *node);
 };

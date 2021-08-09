@@ -20,12 +20,12 @@ std::string const &SymbolTable::get_name()
     return this->name;
 }
 
-bool SymbolTable::put(std::string const &id, std::string const &type)
+bool SymbolTable::put(int s_type, std::string const &id, std::string const &type)
 {
-    if (this->table.find(id) != this->table.end())
+    if (this->table.count(id))
         return false;
 
-    SymbolTableEntry *entry = new SymbolTableEntry(id, type, this->offset);
+    SymbolTableEntry *entry = new SymbolTableEntry(s_type, id, type, this->offset);
     this->table[id] = entry;
 
     // update the offset for the next data
@@ -46,7 +46,7 @@ SymbolTableEntry *SymbolTable::get(std::string const &id)
     {
         std::cout << "searching " << id << " in " << top->get_name() << std::endl;
 
-        if (top->table.count(id) > 0)
+        if (top->table.count(id))
             return top->table[id];
         top = top->parent;
     }

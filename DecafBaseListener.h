@@ -31,11 +31,11 @@ public:
   virtual void enterVarType(DecafParser::VarTypeContext * /*ctx*/) override { }
   virtual void exitVarType(DecafParser::VarTypeContext * /*ctx*/) override { }
 
-  virtual void enterMethodDeclaration(DecafParser::MethodDeclarationContext * /*ctx*/) override { }
-  virtual void exitMethodDeclaration(DecafParser::MethodDeclarationContext * /*ctx*/) override { }
-
   virtual void enterMethodType(DecafParser::MethodTypeContext * /*ctx*/) override { }
   virtual void exitMethodType(DecafParser::MethodTypeContext * /*ctx*/) override { }
+
+  virtual void enterMethodDeclaration(DecafParser::MethodDeclarationContext * /*ctx*/) override { }
+  virtual void exitMethodDeclaration(DecafParser::MethodDeclarationContext * /*ctx*/) override { }
 
   virtual void enterParameter(DecafParser::ParameterContext * /*ctx*/) override { }
   virtual void exitParameter(DecafParser::ParameterContext * /*ctx*/) override { }

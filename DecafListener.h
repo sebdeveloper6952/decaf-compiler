@@ -29,11 +29,11 @@ public:
   virtual void enterVarType(DecafParser::VarTypeContext *ctx) = 0;
   virtual void exitVarType(DecafParser::VarTypeContext *ctx) = 0;
 
-  virtual void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) = 0;
-  virtual void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) = 0;
-
   virtual void enterMethodType(DecafParser::MethodTypeContext *ctx) = 0;
   virtual void exitMethodType(DecafParser::MethodTypeContext *ctx) = 0;
+
+  virtual void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) = 0;
+  virtual void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) = 0;
 
   virtual void enterParameter(DecafParser::ParameterContext *ctx) = 0;
   virtual void exitParameter(DecafParser::ParameterContext *ctx) = 0;
