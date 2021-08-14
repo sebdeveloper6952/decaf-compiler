@@ -1,37 +1,8 @@
 grammar Decaf;
 
 /*
- * Lexer Rules
- */
-fragment ALPHA: [a-zA-Z_];
-
-fragment DIGIT: [0-9];
-
-fragment ALPHA_NUM: ALPHA | DIGIT;
-
-fragment LETTER: [a-zA-Z];
-
-CLASS: 'class';
-PROGRAM: 'Program';
-STRUCT: 'struct';
-TRUE: 'true';
-FALSE: 'false';
-IF: 'if';
-ELSE: 'else';
-VOID: 'void';
-
-ID: ALPHA ALPHA_NUM*;
-
-NUM: DIGIT DIGIT*;
-
-APOSTROPHE: '\'';
-
-CHAR_LITERAL: APOSTROPHE (LETTER | [\\\t\n]) APOSTROPHE;
-
-/*
  * Parser Rules
  */
-
 program: 'class' 'Program' '{' (declaration)* '}' EOF;
 
 declaration:
@@ -74,22 +45,19 @@ statement:
 location: (ID | ID '[' expression ']') ('.' location)?;
 
 expression:
-	location
-	| methodCall
-	| literal
-	| expression ('*' | '/' | '%') expression
-	| expression ('+' | '-') expression
-	| expression rel_op expression
-	| expression eq_op expression
-	| expression cond_op expression
-	| '-' expression
-	| '!' expression
-	| '(' expression ')';
+	location									# expr_loc
+	| methodCall								# expr_method_call
+	| literal									# expr_literal
+	| expression ('*' | '/' | '%') expression	# expr_arith_0
+	| expression ('+' | '-') expression			# expr_arith_1
+	| expression rel_op expression				# expr_rel
+	| expression eq_op expression				# expr_eq
+	| expression cond_op expression				# expr_cond
+	| '-' expression							# expr_neg
+	| '!' expression							# expr_not
+	| '(' expression ')'						# expr_par;
 
-methodCall:
-	ID '()'
-	| ID '(' expression ')'
-	| ID '(' expression (',' expression)+ ')';
+methodCall: ID '(' (expression (',' expression)?)* ')';
 
 arith_op: '*' | '/' | '%' | '+' | '-';
 
@@ -103,8 +71,36 @@ literal: int_literal | char_literal | bool_literal;
 
 int_literal: NUM;
 
-char_literal: '\'' CHAR_LITERAL '\'';
+char_literal: APOSTROPHE CHAR APOSTROPHE;
 
 bool_literal: TRUE | FALSE;
 
-WHITESPACE: [\t\r\n ] -> skip;
+/*
+ * Lexer Rules
+ */
+fragment ALPHA: [a-zA-Z_];
+
+fragment DIGIT: [0-9];
+
+fragment ALPHA_NUM: ALPHA | DIGIT;
+
+fragment LETTER: [a-zA-Z];
+
+CLASS: 'class';
+PROGRAM: 'Program';
+STRUCT: 'struct';
+TRUE: 'true';
+FALSE: 'false';
+IF: 'if';
+ELSE: 'else';
+VOID: 'void';
+
+ID: ALPHA ALPHA_NUM*;
+
+NUM: DIGIT DIGIT*;
+
+APOSTROPHE: '\'';
+
+CHAR: [a-zA-Z0-9];
+
+WHITESPACE: [ \t\r\n] -> skip;

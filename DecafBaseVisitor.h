@@ -63,7 +63,47 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitExpression(DecafParser::ExpressionContext *ctx) override {
+  virtual antlrcpp::Any visitExpr_literal(DecafParser::Expr_literalContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_loc(DecafParser::Expr_locContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_neg(DecafParser::Expr_negContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_par(DecafParser::Expr_parContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_cond(DecafParser::Expr_condContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_method_call(DecafParser::Expr_method_callContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_rel(DecafParser::Expr_relContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_eq(DecafParser::Expr_eqContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpr_not(DecafParser::Expr_notContext *ctx) override {
     return visitChildren(ctx);
   }
 

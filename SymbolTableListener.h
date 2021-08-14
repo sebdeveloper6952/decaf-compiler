@@ -16,18 +16,41 @@ private:
     size_t num_tables = 0;
     void push_table();
     void pop_table();
+    void process_arith_expr(DecafParser::ExpressionContext *ctx);
+    void print_error(std::string msg);
     antlr4::tree::ParseTreeProperty<int> node_types;
 
 public:
     SymbolTableListener(SymbolTable *table);
-    virtual void enterVarDeclaration(DecafParser::VarDeclarationContext *ctx);
-    virtual void exitVarDeclaration(DecafParser::VarDeclarationContext *ctx);
-    virtual void enterBlock(DecafParser::BlockContext *ctx);
-    virtual void exitBlock(DecafParser::BlockContext *ctx);
-    virtual void enterLocation(DecafParser::LocationContext *ctx);
-    virtual void exitLocation(DecafParser::LocationContext *ctx);
-    virtual void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
-    virtual void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
+    void enterVarDeclaration(DecafParser::VarDeclarationContext *ctx);
+    void exitVarDeclaration(DecafParser::VarDeclarationContext *ctx);
+    void enterBlock(DecafParser::BlockContext *ctx);
+    void exitBlock(DecafParser::BlockContext *ctx);
+    void enterLocation(DecafParser::LocationContext *ctx);
+    void exitLocation(DecafParser::LocationContext *ctx);
+    void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
+    void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
+
+    /// expressions
+    void enterExpression(DecafParser::ExpressionContext *ctx);
+    void exitExpression(DecafParser::ExpressionContext *ctx);
+    void enterExpr_arith_1(DecafParser::Expr_arith_1Context *ctx);
+    void exitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx);
+    void enterExpr_arith_0(DecafParser::Expr_arith_0Context *ctx);
+    void exitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx);
+    void enterExpr_rel(DecafParser::Expr_relContext *ctx);
+    void exitExpr_rel(DecafParser::Expr_relContext *ctx);
+    /// finish expressions
+
+    void enterLiteral(DecafParser::LiteralContext *ctx);
+    void exitLiteral(DecafParser::LiteralContext *ctx);
+    void enterInt_literal(DecafParser::Int_literalContext *ctx);
+    void exitInt_literal(DecafParser::Int_literalContext *ctx);
+    void enterChar_literal(DecafParser::Char_literalContext *ctx);
+    void exitChar_literal(DecafParser::Char_literalContext *ctx);
+    void enterBool_literal(DecafParser::Bool_literalContext *ctx);
+    void exitBool_literal(DecafParser::Bool_literalContext *ctx);
+
     void put_node_type(antlr4::tree::ParseTree *node, int type);
-    void get_node_type(antlr4::tree::ParseTree *node);
+    int get_node_type(antlr4::tree::ParseTree *node);
 };

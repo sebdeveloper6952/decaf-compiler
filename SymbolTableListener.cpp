@@ -28,7 +28,7 @@ void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
             for (DecafParser::ParameterContext *p : params)
             {
                 this->table->put(
-                    S_DATA,
+                    O_DATA,
                     p->ID()->getText(),
                     p->parameterType()->getText());
             }
@@ -49,7 +49,7 @@ void SymbolTableListener::enterVarDeclaration(DecafParser::VarDeclarationContext
     DecafParser::VarTypeContext *var_type = ctx->varType();
     antlr4::tree::TerminalNode *id = ctx->ID();
 
-    if (!this->table->put(S_DATA, id->getText(), var_type->getText()))
+    if (!this->table->put(O_DATA, id->getText(), var_type->getText()))
     {
         std::cout << "error: varDeclaration id ("
                   << id->getText()
@@ -69,7 +69,8 @@ void SymbolTableListener::exitVarDeclaration(DecafParser::VarDeclarationContext 
 void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
 {
     std::string id = ctx->ID()->getText();
-    std::cout << "enterLocation: " << id << std::endl;
+    std::cout << std::endl
+              << "enterLocation: " << id << std::endl;
 
     SymbolTableEntry *entry = this->table->get(id);
     if (entry == NULL)
@@ -92,7 +93,7 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
 {
     std::string method_type = ctx->methodType()->getText();
     std::string id = ctx->ID()->getText();
-    if (this->table->put(S_METHOD, id, method_type))
+    if (this->table->put(O_METHOD, id, method_type))
     {
         std::cout << "methodDeclaration saved in symbol table: "
                   << method_type
@@ -104,17 +105,148 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
 
 void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) {}
 
-// ------------------------------------------ Private auxiliary methods -----------------------------------------_
+/// ---------------------------------------- Expressions ----------------------------------------
+void SymbolTableListener::enterExpr_arith_0(DecafParser::Expr_arith_0Context *ctx)
+{
+    std::cout << std::endl
+              << "enterExpr_arith_0" << std::endl;
+}
+
+void SymbolTableListener::exitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx)
+{
+    process_arith_expr(ctx);
+}
+
+void SymbolTableListener::enterExpr_arith_1(DecafParser::Expr_arith_1Context *ctx)
+{
+    std::cout << std::endl
+              << "enterExpr_arith_1: " << ctx->getText() << std::endl;
+}
+
+void SymbolTableListener::exitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx)
+{
+    process_arith_expr(ctx);
+}
+
+void SymbolTableListener::enterExpr_rel(DecafParser::Expr_relContext *ctx)
+{
+    std::cout << std::endl
+              << "enterExpr_rel: " << ctx->getText() << std::endl;
+}
+
+void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
+{
+    // set child types
+    put_node_type(ctx->children[0], get_node_type(ctx->children[0]->children[0]));
+    put_node_type(ctx->children[2], get_node_type(ctx->children[2]->children[0]));
+
+    if (get_node_type(ctx->children[0]) != T_INT)
+    {
+        size_t line = ctx->start->getLine();
+        std::string msg =
+            "in line " + std::to_string(line) + ": '" + ctx->children[0]->getText() + "' is not an integer";
+        print_error(msg);
+        put_node_type(ctx, T_ERROR);
+    }
+
+    if (get_node_type(ctx->children[2]) != T_INT)
+    {
+        size_t line = ctx->start->getLine();
+        std::string msg =
+            "in line " + std::to_string(line) + ": '" + ctx->children[2]->getText() + "' is not an integer";
+        print_error(msg);
+        put_node_type(ctx, T_ERROR);
+    }
+
+    if (get_node_type(ctx) != T_ERROR)
+    {
+        put_node_type(ctx, T_BOOL);
+        std::cout
+            << "exitExpr_arith_1: "
+            << ctx->getText()
+            << " is a valid relational expression."
+            << std::endl;
+    }
+}
+/// ---------------------------------------- Finish Expressions ----------------------------------------
+
+/// ---------------------------------------- Literals ----------------------------------------
+void SymbolTableListener::enterLiteral(DecafParser::LiteralContext *ctx)
+{
+    std::cout << "enterLiteral" << std::endl;
+}
+
+/// Set this literal node type to its children type
+void SymbolTableListener::exitLiteral(DecafParser::LiteralContext *ctx)
+{
+    put_node_type(ctx, get_node_type(ctx->children[0]));
+    std::cout << "exitLiteral: "
+              << "(type: " << get_node_type(ctx) << ")" << std::endl;
+}
+
+void SymbolTableListener::enterInt_literal(DecafParser::Int_literalContext *ctx)
+{
+    std::cout
+        << "enterInt_literal" << std::endl;
+}
+
+void SymbolTableListener::exitInt_literal(DecafParser::Int_literalContext *ctx)
+{
+    put_node_type(ctx, T_INT);
+    std::cout
+        << "exitInt_literal: " << ctx->getText() << " (type: " << get_node_type(ctx) << ")" << std::endl;
+}
+
+void SymbolTableListener::enterChar_literal(DecafParser::Char_literalContext *ctx)
+{
+    std::cout << std::endl
+              << "enterChar_literal" << std::endl;
+}
+
+void SymbolTableListener::exitChar_literal(DecafParser::Char_literalContext *ctx)
+{
+    std::cout
+        << "exitChar_literal: " << ctx->getText() << std::endl;
+    put_node_type(ctx, T_CHAR);
+}
+
+void SymbolTableListener::enterBool_literal(DecafParser::Bool_literalContext *ctx)
+{
+    std::cout
+        << "enterBool_literal" << std::endl;
+}
+
+void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx)
+{
+    std::cout
+        << "exitBool_literal: " << ctx->getText() << std::endl;
+
+    for (auto c : ctx->children)
+    {
+        put_node_type(c, T_BOOL);
+        std::cout
+            << "bool child: "
+            << c->getText()
+            << " has type: "
+            << std::to_string(get_node_type(c));
+    }
+
+    put_node_type(ctx, T_BOOL);
+    std::cout << std::endl
+              << "exitBool_literal has type: " << std::to_string(get_node_type(ctx)) << std::endl;
+}
+/// ---------------------------------------- Finish Literals ----------------------------------------
+
+// ---------------------------------------- Private auxiliary methods ----------------------------------------
 // Node Type association
 void SymbolTableListener::put_node_type(antlr4::tree::ParseTree *node, int type)
 {
     this->node_types.put(node, type);
 }
 
-void SymbolTableListener::get_node_type(antlr4::tree::ParseTree *node)
+int SymbolTableListener::get_node_type(antlr4::tree::ParseTree *node)
 {
-    auto t = this->node_types.get(node);
-    std::cout << "Node type: " << t << std::endl;
+    return this->node_types.get(node);
 }
 
 // Auxiliary methods.
@@ -140,4 +272,46 @@ void SymbolTableListener::pop_table()
     std::cout << "pop(): " << old->get_name() << " | contents:" << std::endl;
     old->print_table();
     std::cout << "----------------------------------------------------" << std::endl;
+}
+
+void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx)
+{
+    // set child types
+    put_node_type(ctx->children[0], get_node_type(ctx->children[0]->children[0]));
+    put_node_type(ctx->children[2], get_node_type(ctx->children[2]->children[0]));
+
+    if (get_node_type(ctx->children[0]) != T_INT)
+    {
+        size_t line = ctx->start->getLine();
+        std::string msg =
+            "in line " + std::to_string(line) + ": '" + ctx->children[0]->getText() + "' is not an interger";
+        print_error(msg);
+        put_node_type(ctx, T_ERROR);
+    }
+
+    if (get_node_type(ctx->children[2]) != T_INT)
+    {
+        size_t line = ctx->start->getLine();
+        std::string msg =
+            "in line " + std::to_string(line) + ": '" + ctx->children[2]->getText() + "' is not an interger";
+        print_error(msg);
+        put_node_type(ctx, T_ERROR);
+    }
+
+    if (get_node_type(ctx) != T_ERROR)
+    {
+        put_node_type(ctx, T_INT);
+        std::cout
+            << "exitExpr_arith_1: "
+            << ctx->getText()
+            << " is a valid arithmetic expression."
+            << std::endl;
+    }
+}
+
+void SymbolTableListener::print_error(std::string msg)
+{
+    std::cout << "[ERROR]: "
+              << msg
+              << std::endl;
 }

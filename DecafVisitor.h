@@ -43,7 +43,27 @@ public:
 
     virtual antlrcpp::Any visitLocation(DecafParser::LocationContext *context) = 0;
 
-    virtual antlrcpp::Any visitExpression(DecafParser::ExpressionContext *context) = 0;
+    virtual antlrcpp::Any visitExpr_literal(DecafParser::Expr_literalContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_loc(DecafParser::Expr_locContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_neg(DecafParser::Expr_negContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_par(DecafParser::Expr_parContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_arith_1(DecafParser::Expr_arith_1Context *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_arith_0(DecafParser::Expr_arith_0Context *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_cond(DecafParser::Expr_condContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_method_call(DecafParser::Expr_method_callContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_rel(DecafParser::Expr_relContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_eq(DecafParser::Expr_eqContext *context) = 0;
+
+    virtual antlrcpp::Any visitExpr_not(DecafParser::Expr_notContext *context) = 0;
 
     virtual antlrcpp::Any visitMethodCall(DecafParser::MethodCallContext *context) = 0;
 

@@ -50,8 +50,38 @@ public:
   virtual void enterLocation(DecafParser::LocationContext *ctx) = 0;
   virtual void exitLocation(DecafParser::LocationContext *ctx) = 0;
 
-  virtual void enterExpression(DecafParser::ExpressionContext *ctx) = 0;
-  virtual void exitExpression(DecafParser::ExpressionContext *ctx) = 0;
+  virtual void enterExpr_literal(DecafParser::Expr_literalContext *ctx) = 0;
+  virtual void exitExpr_literal(DecafParser::Expr_literalContext *ctx) = 0;
+
+  virtual void enterExpr_loc(DecafParser::Expr_locContext *ctx) = 0;
+  virtual void exitExpr_loc(DecafParser::Expr_locContext *ctx) = 0;
+
+  virtual void enterExpr_neg(DecafParser::Expr_negContext *ctx) = 0;
+  virtual void exitExpr_neg(DecafParser::Expr_negContext *ctx) = 0;
+
+  virtual void enterExpr_par(DecafParser::Expr_parContext *ctx) = 0;
+  virtual void exitExpr_par(DecafParser::Expr_parContext *ctx) = 0;
+
+  virtual void enterExpr_arith_1(DecafParser::Expr_arith_1Context *ctx) = 0;
+  virtual void exitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx) = 0;
+
+  virtual void enterExpr_arith_0(DecafParser::Expr_arith_0Context *ctx) = 0;
+  virtual void exitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx) = 0;
+
+  virtual void enterExpr_cond(DecafParser::Expr_condContext *ctx) = 0;
+  virtual void exitExpr_cond(DecafParser::Expr_condContext *ctx) = 0;
+
+  virtual void enterExpr_method_call(DecafParser::Expr_method_callContext *ctx) = 0;
+  virtual void exitExpr_method_call(DecafParser::Expr_method_callContext *ctx) = 0;
+
+  virtual void enterExpr_rel(DecafParser::Expr_relContext *ctx) = 0;
+  virtual void exitExpr_rel(DecafParser::Expr_relContext *ctx) = 0;
+
+  virtual void enterExpr_eq(DecafParser::Expr_eqContext *ctx) = 0;
+  virtual void exitExpr_eq(DecafParser::Expr_eqContext *ctx) = 0;
+
+  virtual void enterExpr_not(DecafParser::Expr_notContext *ctx) = 0;
+  virtual void exitExpr_not(DecafParser::Expr_notContext *ctx) = 0;
 
   virtual void enterMethodCall(DecafParser::MethodCallContext *ctx) = 0;
   virtual void exitMethodCall(DecafParser::MethodCallContext *ctx) = 0;

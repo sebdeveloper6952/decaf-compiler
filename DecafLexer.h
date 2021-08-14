@@ -18,7 +18,7 @@ public:
     T__20 = 21, T__21 = 22, T__22 = 23, T__23 = 24, T__24 = 25, T__25 = 26, 
     T__26 = 27, T__27 = 28, T__28 = 29, T__29 = 30, CLASS = 31, PROGRAM = 32, 
     STRUCT = 33, TRUE = 34, FALSE = 35, IF = 36, ELSE = 37, VOID = 38, ID = 39, 
-    NUM = 40, APOSTROPHE = 41, CHAR_LITERAL = 42, WHITESPACE = 43
+    NUM = 40, APOSTROPHE = 41, CHAR = 42, WHITESPACE = 43
   };
 
   DecafLexer(antlr4::CharStream *input);

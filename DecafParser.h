@@ -18,7 +18,7 @@ public:
     T__20 = 21, T__21 = 22, T__22 = 23, T__23 = 24, T__24 = 25, T__25 = 26, 
     T__26 = 27, T__27 = 28, T__28 = 29, T__29 = 30, CLASS = 31, PROGRAM = 32, 
     STRUCT = 33, TRUE = 34, FALSE = 35, IF = 36, ELSE = 37, VOID = 38, ID = 39, 
-    NUM = 40, APOSTROPHE = 41, CHAR_LITERAL = 42, WHITESPACE = 43
+    NUM = 40, APOSTROPHE = 41, CHAR = 42, WHITESPACE = 43
   };
 
   enum {
@@ -275,21 +275,143 @@ public:
   class  ExpressionContext : public antlr4::ParserRuleContext {
   public:
     ExpressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    LocationContext *location();
-    MethodCallContext *methodCall();
-    LiteralContext *literal();
-    std::vector<ExpressionContext *> expression();
-    ExpressionContext* expression(size_t i);
-    Rel_opContext *rel_op();
-    Eq_opContext *eq_op();
-    Cond_opContext *cond_op();
+   
+    ExpressionContext() = default;
+    void copyFrom(ExpressionContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
 
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  Expr_literalContext : public ExpressionContext {
+  public:
+    Expr_literalContext(ExpressionContext *ctx);
+
+    LiteralContext *literal();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
+  };
+
+  class  Expr_locContext : public ExpressionContext {
+  public:
+    Expr_locContext(ExpressionContext *ctx);
+
+    LocationContext *location();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_negContext : public ExpressionContext {
+  public:
+    Expr_negContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_parContext : public ExpressionContext {
+  public:
+    Expr_parContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_arith_1Context : public ExpressionContext {
+  public:
+    Expr_arith_1Context(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_arith_0Context : public ExpressionContext {
+  public:
+    Expr_arith_0Context(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_condContext : public ExpressionContext {
+  public:
+    Expr_condContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    Cond_opContext *cond_op();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_method_callContext : public ExpressionContext {
+  public:
+    Expr_method_callContext(ExpressionContext *ctx);
+
+    MethodCallContext *methodCall();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_relContext : public ExpressionContext {
+  public:
+    Expr_relContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    Rel_opContext *rel_op();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_eqContext : public ExpressionContext {
+  public:
+    Expr_eqContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    Eq_opContext *eq_op();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_notContext : public ExpressionContext {
+  public:
+    Expr_notContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   ExpressionContext* expression();
@@ -405,7 +527,7 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> APOSTROPHE();
     antlr4::tree::TerminalNode* APOSTROPHE(size_t i);
-    antlr4::tree::TerminalNode *CHAR_LITERAL();
+    antlr4::tree::TerminalNode *CHAR();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

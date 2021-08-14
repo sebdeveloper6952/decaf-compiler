@@ -20,12 +20,18 @@ std::string const &SymbolTable::get_name()
     return this->name;
 }
 
-bool SymbolTable::put(int s_type, std::string const &id, std::string const &type)
+bool SymbolTable::put(int obj_type, std::string const &id, std::string const &type)
 {
     if (this->table.count(id))
         return false;
 
-    SymbolTableEntry *entry = new SymbolTableEntry(s_type, id, type, this->offset);
+    int data_type = 0;
+    if (type == "boolean")
+        data_type = 1;
+    if (type == "char")
+        data_type = 2;
+
+    SymbolTableEntry *entry = new SymbolTableEntry(id, obj_type, data_type, type, this->offset);
     this->table[id] = entry;
 
     // update the offset for the next data
