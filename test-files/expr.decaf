@@ -1,5 +1,10 @@
 class Program
 {
+	int return_one()
+	{
+		return 1;
+	}
+
 	void main()
 	{
 		int a;

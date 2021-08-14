@@ -47,8 +47,26 @@ public:
   virtual void enterBlock(DecafParser::BlockContext *ctx) = 0;
   virtual void exitBlock(DecafParser::BlockContext *ctx) = 0;
 
-  virtual void enterStatement(DecafParser::StatementContext *ctx) = 0;
-  virtual void exitStatement(DecafParser::StatementContext *ctx) = 0;
+  virtual void enterSt_if(DecafParser::St_ifContext *ctx) = 0;
+  virtual void exitSt_if(DecafParser::St_ifContext *ctx) = 0;
+
+  virtual void enterSt_while(DecafParser::St_whileContext *ctx) = 0;
+  virtual void exitSt_while(DecafParser::St_whileContext *ctx) = 0;
+
+  virtual void enterSt_return(DecafParser::St_returnContext *ctx) = 0;
+  virtual void exitSt_return(DecafParser::St_returnContext *ctx) = 0;
+
+  virtual void enterSt_method_call(DecafParser::St_method_callContext *ctx) = 0;
+  virtual void exitSt_method_call(DecafParser::St_method_callContext *ctx) = 0;
+
+  virtual void enterSt_block(DecafParser::St_blockContext *ctx) = 0;
+  virtual void exitSt_block(DecafParser::St_blockContext *ctx) = 0;
+
+  virtual void enterSt_assignment(DecafParser::St_assignmentContext *ctx) = 0;
+  virtual void exitSt_assignment(DecafParser::St_assignmentContext *ctx) = 0;
+
+  virtual void enterSt_expression(DecafParser::St_expressionContext *ctx) = 0;
+  virtual void exitSt_expression(DecafParser::St_expressionContext *ctx) = 0;
 
   virtual void enterLocation(DecafParser::LocationContext *ctx) = 0;
   virtual void exitLocation(DecafParser::LocationContext *ctx) = 0;

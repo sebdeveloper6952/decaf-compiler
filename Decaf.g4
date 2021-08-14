@@ -35,13 +35,13 @@ parameterType: 'int' | 'char' | 'boolean';
 block: '{' (varDeclaration)* (statement)* '}';
 
 statement:
-	'if' '(' expression ')' block ('else' block)?
-	| 'while' '(' expression ')' block
-	| 'return' expression? ';'
-	| methodCall ';'
-	| block
-	| location '=' expression
-	| expression? ';';
+	'if' '(' expression ')' block ('else' block)?	# st_if
+	| 'while' '(' expression ')' block				# st_while
+	| 'return' expression? ';'						# st_return
+	| methodCall ';'								# st_method_call
+	| block											# st_block
+	| location '=' expression						# st_assignment
+	| expression? ';'								# st_expression;
 
 location: (ID | ID '[' expression ']') ('.' location)?;
 

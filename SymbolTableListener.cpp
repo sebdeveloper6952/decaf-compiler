@@ -310,6 +310,60 @@ void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx
 }
 /// ---------------------------------------- Finish Literals ----------------------------------------
 
+/// ---------------------------------------- Statements ----------------------------------------
+void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
+{
+    std::cout << "exitSt_return" << std::endl;
+
+    // validate an ancestor is a method
+    antlr4::tree::ParseTree *parent = ctx->parent;
+    while (parent != NULL)
+    {
+        // node in question is a method declaration
+        if (((antlr4::ParserRuleContext *)parent)->getRuleIndex() == DecafParser::RuleMethodDeclaration)
+        {
+            break;
+        }
+        parent = parent->parent;
+    }
+    // return statement was made outside of methodDeclaration
+    if (parent == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+        std::string msg = "return statement must be inside a method block.";
+
+        return;
+    }
+
+    // get return type of method
+    DecafParser::MethodDeclarationContext *method = (DecafParser::MethodDeclarationContext *)parent;
+    SymbolTableEntry *entry = this->table->get(method->ID()->getText());
+    std::cout << "\treturn statement found inside "
+              << entry->id
+              << " | "
+              << entry->data_type
+              << std::endl;
+
+    // validate return type expression
+    DecafParser::ExpressionContext *expr = ctx->expression();
+    if (expr != NULL && expr->children.size() > 0)
+    {
+        int expr_type = get_node_type(expr->children[0]);
+        if (entry->data_type != expr_type)
+        {
+            std::string msg = "return expression of type: " + expr_type;
+            msg += " is incompatible with method type of: " + entry->data_type;
+            print_error(msg);
+        }
+        else
+        {
+            std::cout << "\treturn type is compatible with method type."
+                      << std::endl;
+        }
+    }
+}
+/// --------------------------------------------------------------------------------------------
+
 // ---------------------------------------- Private auxiliary methods ----------------------------------------
 // Node Type association
 void SymbolTableListener::put_node_type(antlr4::tree::ParseTree *node, int type)

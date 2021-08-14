@@ -59,7 +59,31 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitStatement(DecafParser::StatementContext *ctx) override {
+  virtual antlrcpp::Any visitSt_if(DecafParser::St_ifContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSt_while(DecafParser::St_whileContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSt_return(DecafParser::St_returnContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSt_method_call(DecafParser::St_method_callContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSt_block(DecafParser::St_blockContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSt_assignment(DecafParser::St_assignmentContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSt_expression(DecafParser::St_expressionContext *ctx) override {
     return visitChildren(ctx);
   }
 

@@ -41,7 +41,19 @@ public:
 
     virtual antlrcpp::Any visitBlock(DecafParser::BlockContext *context) = 0;
 
-    virtual antlrcpp::Any visitStatement(DecafParser::StatementContext *context) = 0;
+    virtual antlrcpp::Any visitSt_if(DecafParser::St_ifContext *context) = 0;
+
+    virtual antlrcpp::Any visitSt_while(DecafParser::St_whileContext *context) = 0;
+
+    virtual antlrcpp::Any visitSt_return(DecafParser::St_returnContext *context) = 0;
+
+    virtual antlrcpp::Any visitSt_method_call(DecafParser::St_method_callContext *context) = 0;
+
+    virtual antlrcpp::Any visitSt_block(DecafParser::St_blockContext *context) = 0;
+
+    virtual antlrcpp::Any visitSt_assignment(DecafParser::St_assignmentContext *context) = 0;
+
+    virtual antlrcpp::Any visitSt_expression(DecafParser::St_expressionContext *context) = 0;
 
     virtual antlrcpp::Any visitLocation(DecafParser::LocationContext *context) = 0;
 

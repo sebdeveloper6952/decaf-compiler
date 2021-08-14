@@ -970,59 +970,214 @@ DecafParser::StatementContext::StatementContext(ParserRuleContext *parent, size_
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* DecafParser::StatementContext::IF() {
-  return getToken(DecafParser::IF, 0);
-}
-
-DecafParser::ExpressionContext* DecafParser::StatementContext::expression() {
-  return getRuleContext<DecafParser::ExpressionContext>(0);
-}
-
-std::vector<DecafParser::BlockContext *> DecafParser::StatementContext::block() {
-  return getRuleContexts<DecafParser::BlockContext>();
-}
-
-DecafParser::BlockContext* DecafParser::StatementContext::block(size_t i) {
-  return getRuleContext<DecafParser::BlockContext>(i);
-}
-
-tree::TerminalNode* DecafParser::StatementContext::ELSE() {
-  return getToken(DecafParser::ELSE, 0);
-}
-
-DecafParser::MethodCallContext* DecafParser::StatementContext::methodCall() {
-  return getRuleContext<DecafParser::MethodCallContext>(0);
-}
-
-DecafParser::LocationContext* DecafParser::StatementContext::location() {
-  return getRuleContext<DecafParser::LocationContext>(0);
-}
-
 
 size_t DecafParser::StatementContext::getRuleIndex() const {
   return DecafParser::RuleStatement;
 }
 
-void DecafParser::StatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<DecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStatement(this);
+void DecafParser::StatementContext::copyFrom(StatementContext *ctx) {
+  ParserRuleContext::copyFrom(ctx);
 }
 
-void DecafParser::StatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<DecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStatement(this);
+//----------------- St_ifContext ------------------------------------------------------------------
+
+tree::TerminalNode* DecafParser::St_ifContext::IF() {
+  return getToken(DecafParser::IF, 0);
 }
 
+DecafParser::ExpressionContext* DecafParser::St_ifContext::expression() {
+  return getRuleContext<DecafParser::ExpressionContext>(0);
+}
 
-antlrcpp::Any DecafParser::StatementContext::accept(tree::ParseTreeVisitor *visitor) {
+std::vector<DecafParser::BlockContext *> DecafParser::St_ifContext::block() {
+  return getRuleContexts<DecafParser::BlockContext>();
+}
+
+DecafParser::BlockContext* DecafParser::St_ifContext::block(size_t i) {
+  return getRuleContext<DecafParser::BlockContext>(i);
+}
+
+tree::TerminalNode* DecafParser::St_ifContext::ELSE() {
+  return getToken(DecafParser::ELSE, 0);
+}
+
+DecafParser::St_ifContext::St_ifContext(StatementContext *ctx) { copyFrom(ctx); }
+
+void DecafParser::St_ifContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterSt_if(this);
+}
+void DecafParser::St_ifContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitSt_if(this);
+}
+
+antlrcpp::Any DecafParser::St_ifContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<DecafVisitor*>(visitor))
-    return parserVisitor->visitStatement(this);
+    return parserVisitor->visitSt_if(this);
   else
     return visitor->visitChildren(this);
 }
+//----------------- St_blockContext ------------------------------------------------------------------
 
+DecafParser::BlockContext* DecafParser::St_blockContext::block() {
+  return getRuleContext<DecafParser::BlockContext>(0);
+}
+
+DecafParser::St_blockContext::St_blockContext(StatementContext *ctx) { copyFrom(ctx); }
+
+void DecafParser::St_blockContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterSt_block(this);
+}
+void DecafParser::St_blockContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitSt_block(this);
+}
+
+antlrcpp::Any DecafParser::St_blockContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<DecafVisitor*>(visitor))
+    return parserVisitor->visitSt_block(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- St_expressionContext ------------------------------------------------------------------
+
+DecafParser::ExpressionContext* DecafParser::St_expressionContext::expression() {
+  return getRuleContext<DecafParser::ExpressionContext>(0);
+}
+
+DecafParser::St_expressionContext::St_expressionContext(StatementContext *ctx) { copyFrom(ctx); }
+
+void DecafParser::St_expressionContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterSt_expression(this);
+}
+void DecafParser::St_expressionContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitSt_expression(this);
+}
+
+antlrcpp::Any DecafParser::St_expressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<DecafVisitor*>(visitor))
+    return parserVisitor->visitSt_expression(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- St_whileContext ------------------------------------------------------------------
+
+DecafParser::ExpressionContext* DecafParser::St_whileContext::expression() {
+  return getRuleContext<DecafParser::ExpressionContext>(0);
+}
+
+DecafParser::BlockContext* DecafParser::St_whileContext::block() {
+  return getRuleContext<DecafParser::BlockContext>(0);
+}
+
+DecafParser::St_whileContext::St_whileContext(StatementContext *ctx) { copyFrom(ctx); }
+
+void DecafParser::St_whileContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterSt_while(this);
+}
+void DecafParser::St_whileContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitSt_while(this);
+}
+
+antlrcpp::Any DecafParser::St_whileContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<DecafVisitor*>(visitor))
+    return parserVisitor->visitSt_while(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- St_returnContext ------------------------------------------------------------------
+
+DecafParser::ExpressionContext* DecafParser::St_returnContext::expression() {
+  return getRuleContext<DecafParser::ExpressionContext>(0);
+}
+
+DecafParser::St_returnContext::St_returnContext(StatementContext *ctx) { copyFrom(ctx); }
+
+void DecafParser::St_returnContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterSt_return(this);
+}
+void DecafParser::St_returnContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitSt_return(this);
+}
+
+antlrcpp::Any DecafParser::St_returnContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<DecafVisitor*>(visitor))
+    return parserVisitor->visitSt_return(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- St_method_callContext ------------------------------------------------------------------
+
+DecafParser::MethodCallContext* DecafParser::St_method_callContext::methodCall() {
+  return getRuleContext<DecafParser::MethodCallContext>(0);
+}
+
+DecafParser::St_method_callContext::St_method_callContext(StatementContext *ctx) { copyFrom(ctx); }
+
+void DecafParser::St_method_callContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterSt_method_call(this);
+}
+void DecafParser::St_method_callContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitSt_method_call(this);
+}
+
+antlrcpp::Any DecafParser::St_method_callContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<DecafVisitor*>(visitor))
+    return parserVisitor->visitSt_method_call(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- St_assignmentContext ------------------------------------------------------------------
+
+DecafParser::LocationContext* DecafParser::St_assignmentContext::location() {
+  return getRuleContext<DecafParser::LocationContext>(0);
+}
+
+DecafParser::ExpressionContext* DecafParser::St_assignmentContext::expression() {
+  return getRuleContext<DecafParser::ExpressionContext>(0);
+}
+
+DecafParser::St_assignmentContext::St_assignmentContext(StatementContext *ctx) { copyFrom(ctx); }
+
+void DecafParser::St_assignmentContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterSt_assignment(this);
+}
+void DecafParser::St_assignmentContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<DecafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitSt_assignment(this);
+}
+
+antlrcpp::Any DecafParser::St_assignmentContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<DecafVisitor*>(visitor))
+    return parserVisitor->visitSt_assignment(this);
+  else
+    return visitor->visitChildren(this);
+}
 DecafParser::StatementContext* DecafParser::statement() {
   StatementContext *_localctx = _tracker.createInstance<StatementContext>(_ctx, getState());
   enterRule(_localctx, 20, DecafParser::RuleStatement);
@@ -1036,6 +1191,7 @@ DecafParser::StatementContext* DecafParser::statement() {
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 12, _ctx)) {
     case 1: {
+      _localctx = dynamic_cast<StatementContext *>(_tracker.createInstance<DecafParser::St_ifContext>(_localctx));
       enterOuterAlt(_localctx, 1);
       setState(133);
       match(DecafParser::IF);
@@ -1061,6 +1217,7 @@ DecafParser::StatementContext* DecafParser::statement() {
     }
 
     case 2: {
+      _localctx = dynamic_cast<StatementContext *>(_tracker.createInstance<DecafParser::St_whileContext>(_localctx));
       enterOuterAlt(_localctx, 2);
       setState(142);
       match(DecafParser::T__11);
@@ -1076,6 +1233,7 @@ DecafParser::StatementContext* DecafParser::statement() {
     }
 
     case 3: {
+      _localctx = dynamic_cast<StatementContext *>(_tracker.createInstance<DecafParser::St_returnContext>(_localctx));
       enterOuterAlt(_localctx, 3);
       setState(148);
       match(DecafParser::T__12);
@@ -1101,6 +1259,7 @@ DecafParser::StatementContext* DecafParser::statement() {
     }
 
     case 4: {
+      _localctx = dynamic_cast<StatementContext *>(_tracker.createInstance<DecafParser::St_method_callContext>(_localctx));
       enterOuterAlt(_localctx, 4);
       setState(153);
       methodCall();
@@ -1110,6 +1269,7 @@ DecafParser::StatementContext* DecafParser::statement() {
     }
 
     case 5: {
+      _localctx = dynamic_cast<StatementContext *>(_tracker.createInstance<DecafParser::St_blockContext>(_localctx));
       enterOuterAlt(_localctx, 5);
       setState(156);
       block();
@@ -1117,6 +1277,7 @@ DecafParser::StatementContext* DecafParser::statement() {
     }
 
     case 6: {
+      _localctx = dynamic_cast<StatementContext *>(_tracker.createInstance<DecafParser::St_assignmentContext>(_localctx));
       enterOuterAlt(_localctx, 6);
       setState(157);
       location();
@@ -1128,6 +1289,7 @@ DecafParser::StatementContext* DecafParser::statement() {
     }
 
     case 7: {
+      _localctx = dynamic_cast<StatementContext *>(_tracker.createInstance<DecafParser::St_expressionContext>(_localctx));
       enterOuterAlt(_localctx, 7);
       setState(162);
       _errHandler->sync(this);

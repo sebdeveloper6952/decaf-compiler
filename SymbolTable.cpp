@@ -25,12 +25,7 @@ bool SymbolTable::put(int obj_type, std::string const &id, std::string const &ty
     if (this->table.count(id))
         return false;
 
-    int data_type = 0;
-    if (type == "boolean")
-        data_type = 1;
-    if (type == "char")
-        data_type = 2;
-
+    int data_type = this->type_to_int(type);
     SymbolTableEntry *entry = new SymbolTableEntry(id, obj_type, data_type, type, this->offset);
     this->table[id] = entry;
 
@@ -73,4 +68,15 @@ void SymbolTable::print_table()
     {
         std::cout << elem.first << " => " << *elem.second << std::endl;
     }
+}
+
+int SymbolTable::type_to_int(std::string type)
+{
+    if (type == "int")
+        return T_INT;
+    if (type == "boolean")
+        return T_BOOL;
+    if (type == "char")
+        return T_CHAR;
+    return T_ERROR;
 }

@@ -49,8 +49,26 @@ public:
   virtual void enterBlock(DecafParser::BlockContext * /*ctx*/) override { }
   virtual void exitBlock(DecafParser::BlockContext * /*ctx*/) override { }
 
-  virtual void enterStatement(DecafParser::StatementContext * /*ctx*/) override { }
-  virtual void exitStatement(DecafParser::StatementContext * /*ctx*/) override { }
+  virtual void enterSt_if(DecafParser::St_ifContext * /*ctx*/) override { }
+  virtual void exitSt_if(DecafParser::St_ifContext * /*ctx*/) override { }
+
+  virtual void enterSt_while(DecafParser::St_whileContext * /*ctx*/) override { }
+  virtual void exitSt_while(DecafParser::St_whileContext * /*ctx*/) override { }
+
+  virtual void enterSt_return(DecafParser::St_returnContext * /*ctx*/) override { }
+  virtual void exitSt_return(DecafParser::St_returnContext * /*ctx*/) override { }
+
+  virtual void enterSt_method_call(DecafParser::St_method_callContext * /*ctx*/) override { }
+  virtual void exitSt_method_call(DecafParser::St_method_callContext * /*ctx*/) override { }
+
+  virtual void enterSt_block(DecafParser::St_blockContext * /*ctx*/) override { }
+  virtual void exitSt_block(DecafParser::St_blockContext * /*ctx*/) override { }
+
+  virtual void enterSt_assignment(DecafParser::St_assignmentContext * /*ctx*/) override { }
+  virtual void exitSt_assignment(DecafParser::St_assignmentContext * /*ctx*/) override { }
+
+  virtual void enterSt_expression(DecafParser::St_expressionContext * /*ctx*/) override { }
+  virtual void exitSt_expression(DecafParser::St_expressionContext * /*ctx*/) override { }
 
   virtual void enterLocation(DecafParser::LocationContext * /*ctx*/) override { }
   virtual void exitLocation(DecafParser::LocationContext * /*ctx*/) override { }

@@ -32,14 +32,22 @@ public:
     void enterVar_decl(DecafParser::Var_declContext *ctx);
     void enterVar_arr_decl(DecafParser::Var_arr_declContext *ctx);
 
+    // block
     void enterBlock(DecafParser::BlockContext *ctx);
     void exitBlock(DecafParser::BlockContext *ctx);
+
+    // statements
+    void exitSt_return(DecafParser::St_returnContext *ctx);
+
+    // location
     void enterLocation(DecafParser::LocationContext *ctx);
     void exitLocation(DecafParser::LocationContext *ctx);
+
+    // method declaration
     void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
     void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
 
-    /// expressions
+    // expressions
     void enterExpression(DecafParser::ExpressionContext *ctx);
     void exitExpression(DecafParser::ExpressionContext *ctx);
     void enterExpr_arith_1(DecafParser::Expr_arith_1Context *ctx);
@@ -48,7 +56,6 @@ public:
     void exitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx);
     void enterExpr_rel(DecafParser::Expr_relContext *ctx);
     void exitExpr_rel(DecafParser::Expr_relContext *ctx);
-    /// finish expressions
 
     void enterLiteral(DecafParser::LiteralContext *ctx);
     void exitLiteral(DecafParser::LiteralContext *ctx);
