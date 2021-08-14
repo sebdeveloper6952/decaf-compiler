@@ -20,8 +20,11 @@ public:
   virtual void enterDeclaration(DecafParser::DeclarationContext *ctx) = 0;
   virtual void exitDeclaration(DecafParser::DeclarationContext *ctx) = 0;
 
-  virtual void enterVarDeclaration(DecafParser::VarDeclarationContext *ctx) = 0;
-  virtual void exitVarDeclaration(DecafParser::VarDeclarationContext *ctx) = 0;
+  virtual void enterVar_decl(DecafParser::Var_declContext *ctx) = 0;
+  virtual void exitVar_decl(DecafParser::Var_declContext *ctx) = 0;
+
+  virtual void enterVar_arr_decl(DecafParser::Var_arr_declContext *ctx) = 0;
+  virtual void exitVar_arr_decl(DecafParser::Var_arr_declContext *ctx) = 0;
 
   virtual void enterStructDeclaration(DecafParser::StructDeclarationContext *ctx) = 0;
   virtual void exitStructDeclaration(DecafParser::StructDeclarationContext *ctx) = 0;

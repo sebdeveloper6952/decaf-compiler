@@ -22,8 +22,11 @@ public:
   virtual void enterDeclaration(DecafParser::DeclarationContext * /*ctx*/) override { }
   virtual void exitDeclaration(DecafParser::DeclarationContext * /*ctx*/) override { }
 
-  virtual void enterVarDeclaration(DecafParser::VarDeclarationContext * /*ctx*/) override { }
-  virtual void exitVarDeclaration(DecafParser::VarDeclarationContext * /*ctx*/) override { }
+  virtual void enterVar_decl(DecafParser::Var_declContext * /*ctx*/) override { }
+  virtual void exitVar_decl(DecafParser::Var_declContext * /*ctx*/) override { }
+
+  virtual void enterVar_arr_decl(DecafParser::Var_arr_declContext * /*ctx*/) override { }
+  virtual void exitVar_arr_decl(DecafParser::Var_arr_declContext * /*ctx*/) override { }
 
   virtual void enterStructDeclaration(DecafParser::StructDeclarationContext * /*ctx*/) override { }
   virtual void exitStructDeclaration(DecafParser::StructDeclarationContext * /*ctx*/) override { }

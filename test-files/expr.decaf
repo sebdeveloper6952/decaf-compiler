@@ -5,6 +5,8 @@ class Program
 		int a;
 		int b;
 		int i;
+		int array[5];
+		int array_1[0];
 
 		a + b;
         i = 1 + 2;

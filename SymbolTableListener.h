@@ -14,6 +14,7 @@ class SymbolTableListener : public DecafBaseListener
 private:
     SymbolTable *table;
     size_t num_tables = 0;
+    bool is_main_valid;
     void push_table();
     void pop_table();
     void process_arith_expr(DecafParser::ExpressionContext *ctx);
@@ -22,8 +23,15 @@ private:
 
 public:
     SymbolTableListener(SymbolTable *table);
-    void enterVarDeclaration(DecafParser::VarDeclarationContext *ctx);
-    void exitVarDeclaration(DecafParser::VarDeclarationContext *ctx);
+
+    // class Program
+    void enterProgram(DecafParser::ProgramContext *ctx);
+    void exitProgram(DecafParser::ProgramContext *ctx);
+
+    // var declarations
+    void enterVar_decl(DecafParser::Var_declContext *ctx);
+    void enterVar_arr_decl(DecafParser::Var_arr_declContext *ctx);
+
     void enterBlock(DecafParser::BlockContext *ctx);
     void exitBlock(DecafParser::BlockContext *ctx);
     void enterLocation(DecafParser::LocationContext *ctx);

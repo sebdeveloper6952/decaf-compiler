@@ -23,7 +23,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitVarDeclaration(DecafParser::VarDeclarationContext *ctx) override {
+  virtual antlrcpp::Any visitVar_decl(DecafParser::Var_declContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitVar_arr_decl(DecafParser::Var_arr_declContext *ctx) override {
     return visitChildren(ctx);
   }
 

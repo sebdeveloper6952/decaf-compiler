@@ -10,6 +10,28 @@ SymbolTableListener::SymbolTableListener(SymbolTable *table)
     this->table = table;
 }
 
+/// ---------------------------------------- top level class Program ----------------------------------------
+
+/**
+ * enterProgram
+ * 
+ */
+void SymbolTableListener::enterProgram(DecafParser::ProgramContext *ctx) {}
+
+/**
+ * exitProgram
+ * 
+ * Check that the source program has a valid 'main' declaration.
+ */
+void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
+{
+    if (!this->is_main_valid)
+    {
+        put_node_type(ctx, T_ERROR);
+        print_error("Source program must include a valid 'main' function declaration.");
+    }
+}
+
 // Enter a new block
 void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
 {
@@ -43,8 +65,8 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
     this->pop_table();
 }
 
-// New var declaration
-void SymbolTableListener::enterVarDeclaration(DecafParser::VarDeclarationContext *ctx)
+/// ---------------------------------------- Var Declarations ----------------------------------------
+void SymbolTableListener::enterVar_decl(DecafParser::Var_declContext *ctx)
 {
     DecafParser::VarTypeContext *var_type = ctx->varType();
     antlr4::tree::TerminalNode *id = ctx->ID();
@@ -62,8 +84,44 @@ void SymbolTableListener::enterVarDeclaration(DecafParser::VarDeclarationContext
     std::cout << this->table->get_name() << "->push(): " << id->getText() << std::endl;
 }
 
-// Finish new var declaration
-void SymbolTableListener::exitVarDeclaration(DecafParser::VarDeclarationContext *ctx) {}
+/**
+ * Check that an array declaration is valid. If it is valid, save the array object
+ * int the symbol table.
+ * 
+ * Checks that NUM is a valid integer literal:
+ *  - must be greater than zero
+ *  - no upper bound as of right now
+ */
+void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ctx)
+{
+    DecafParser::VarTypeContext *var_type = ctx->varType();
+    antlr4::tree::TerminalNode *id = ctx->ID();
+    antlr4::tree::TerminalNode *array_size = ctx->NUM();
+
+    if (std::stoi(array_size->getText()) < 1)
+    {
+        put_node_type(ctx, T_ERROR);
+        std::string msg =
+            "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        msg += array_size->getText();
+        msg += " is an invalid integer for array size.";
+        print_error(msg);
+
+        return;
+    }
+
+    if (!this->table->put(O_ARRAY, id->getText(), var_type->getText()))
+    {
+        std::cout << "error: varDeclaration id ("
+                  << id->getText()
+                  << ") is already declared."
+                  << std::endl;
+
+        return;
+    }
+
+    std::cout << this->table->get_name() << "->push(): " << id->getText() << std::endl;
+}
 
 // location
 void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
@@ -88,11 +146,25 @@ void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
 
 void SymbolTableListener::exitLocation(DecafParser::LocationContext *ctx) {}
 
-// Method declaration
+/// ----------------------------------------  Method declaration ----------------------------------------
+
+/**
+ * Called on each method declaration.
+ * 
+ * Check if the method being declared is the required 'main' method.
+ */
 void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx)
 {
     std::string method_type = ctx->methodType()->getText();
     std::string id = ctx->ID()->getText();
+
+    // validate 'main' declaration
+    if (id == "main")
+    {
+        this->is_main_valid = method_type == "void" &&
+                              ctx->parameter().size() == 0;
+    }
+
     if (this->table->put(O_METHOD, id, method_type))
     {
         std::cout << "methodDeclaration saved in symbol table: "
@@ -102,6 +174,7 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
                   << std::endl;
     }
 }
+/// -----------------------------------------------------------------------------------------------------
 
 void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) {}
 
@@ -284,7 +357,7 @@ void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx
     {
         size_t line = ctx->start->getLine();
         std::string msg =
-            "in line " + std::to_string(line) + ": '" + ctx->children[0]->getText() + "' is not an interger";
+            "in line " + std::to_string(line) + ": '" + ctx->children[0]->getText() + "' is not an integer";
         print_error(msg);
         put_node_type(ctx, T_ERROR);
     }
@@ -293,7 +366,7 @@ void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx
     {
         size_t line = ctx->start->getLine();
         std::string msg =
-            "in line " + std::to_string(line) + ": '" + ctx->children[2]->getText() + "' is not an interger";
+            "in line " + std::to_string(line) + ": '" + ctx->children[2]->getText() + "' is not an integer";
         print_error(msg);
         put_node_type(ctx, T_ERROR);
     }

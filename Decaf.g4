@@ -10,7 +10,9 @@ declaration:
 	| varDeclaration
 	| methodDeclaration;
 
-varDeclaration: varType ID ';' | varType ID '[' NUM ']' ';';
+varDeclaration:
+	varType ID ';'					# var_decl
+	| varType ID '[' NUM ']' ';'	# var_arr_decl;
 
 structDeclaration: 'struct' ID '{' (varDeclaration)* '}' ';';
 
@@ -24,8 +26,7 @@ varType:
 
 methodType: 'int' | 'char' | 'boolean' | 'void';
 methodDeclaration:
-	methodType ID '()' block
-	| methodType ID '(' (parameter (',' parameter)*)? ')' block;
+	methodType ID '(' (parameter (',' parameter)*)? ')' block;
 
 parameter: parameterType ID;
 
