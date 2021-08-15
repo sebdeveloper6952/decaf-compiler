@@ -2664,11 +2664,11 @@ std::vector<std::string> DecafParser::_ruleNames = {
 };
 
 std::vector<std::string> DecafParser::_literalNames = {
-  "", "'{'", "'}'", "';'", "'['", "']'", "'int'", "'char'", "'boolean'", 
-  "'('", "','", "')'", "'while'", "'return'", "'='", "'.'", "'*'", "'/'", 
-  "'%'", "'+'", "'-'", "'!'", "'<'", "'>'", "'<='", "'>='", "'=='", "'!='", 
-  "'&&'", "'||'", "'class'", "'Program'", "'struct'", "'true'", "'false'", 
-  "'if'", "'else'", "'void'", "", "", "'''"
+  "", "'{'", "'}'", "';'", "'['", "']'", "'int'", "'char'", "'bool'", "'('", 
+  "','", "')'", "'while'", "'return'", "'='", "'.'", "'*'", "'/'", "'%'", 
+  "'+'", "'-'", "'!'", "'<'", "'>'", "'<='", "'>='", "'=='", "'!='", "'&&'", 
+  "'||'", "'class'", "'Program'", "'struct'", "'true'", "'false'", "'if'", 
+  "'else'", "'void'", "", "", "'''"
 };
 
 std::vector<std::string> DecafParser::_symbolicNames = {

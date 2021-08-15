@@ -356,6 +356,99 @@ void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
             << std::endl;
     }
 }
+
+void SymbolTableListener::enterExpr_cond(DecafParser::Expr_condContext *ctx)
+{
+    std::cout << std::endl
+              << "enterExpr_cond: " << ctx->getText() << std::endl;
+}
+
+/**
+ * expression cond_op expression
+ * 
+ * Both expression must be of type bool.
+ */
+void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
+{
+    std::vector<DecafParser::ExpressionContext *> exprs = ctx->expression();
+
+    int left_type = get_node_type(exprs[0]);
+    if (exprs[0]->children.size() == 1)
+        left_type = get_node_type(exprs[0]->children[0]);
+
+    int right_type = get_node_type(exprs[1]);
+    if (exprs[1]->children.size() == 1)
+        right_type = get_node_type(exprs[1]->children[0]);
+
+    for (auto c : ctx->children)
+    {
+        std::cout << "\tchild: " << c->getText() << std::endl;
+    }
+
+    if (left_type != T_BOOL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        msg += exprs[0]->getText() + " must be of type 'BOOL', '";
+        msg += DataTypes::int_to_type(left_type) + "' found.";
+        print_error(msg);
+
+        return;
+    }
+
+    if (right_type != T_BOOL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        msg += exprs[1]->getText() + " must be of type 'BOOL', '";
+        msg += DataTypes::int_to_type(right_type) + "' found.";
+        print_error(msg);
+
+        return;
+    }
+
+    put_node_type(ctx, T_BOOL);
+    std::cout << "exitExpr_cond: "
+              << ctx->getText()
+              << " has type: '"
+              << DataTypes::int_to_type(get_node_type(ctx))
+              << "'" << std::endl;
+}
+
+/**
+ * 
+ */
+void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
+{
+    DecafParser::ExpressionContext *expr = ctx->expression();
+
+    int expr_type = get_node_type(expr);
+    if (expr->children.size() == 1)
+        expr_type = get_node_type(expr->children[0]);
+
+    if (expr_type != T_BOOL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        msg += expr->getText() + " must be of type 'BOOL', '";
+        msg += DataTypes::int_to_type(expr_type) + "' found.";
+        print_error(msg);
+
+        return;
+    }
+
+    put_node_type(ctx, T_BOOL);
+
+    std::cout << "exitExpr_not: "
+              << ctx->getText()
+              << " has type '"
+              << DataTypes::int_to_type(get_node_type(ctx))
+              << "'"
+              << std::endl;
+}
 /// ---------------------------------------- Finish Expressions ----------------------------------------
 
 /// ---------------------------------------- Literals ----------------------------------------

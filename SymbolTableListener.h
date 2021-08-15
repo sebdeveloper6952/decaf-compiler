@@ -58,6 +58,9 @@ public:
     void exitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx);
     void enterExpr_rel(DecafParser::Expr_relContext *ctx);
     void exitExpr_rel(DecafParser::Expr_relContext *ctx);
+    void enterExpr_cond(DecafParser::Expr_condContext *ctx);
+    void exitExpr_cond(DecafParser::Expr_condContext *ctx);
+    void exitExpr_not(DecafParser::Expr_notContext *ctx);
 
     void enterLiteral(DecafParser::LiteralContext *ctx);
     void exitLiteral(DecafParser::LiteralContext *ctx);

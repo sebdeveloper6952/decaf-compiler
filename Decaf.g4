@@ -19,18 +19,18 @@ structDeclaration: 'struct' ID '{' (varDeclaration)* '}' ';';
 varType:
 	'int'
 	| 'char'
-	| 'boolean'
+	| 'bool'
 	| 'struct' ID
 	| structDeclaration
 	| 'void';
 
-methodType: 'int' | 'char' | 'boolean' | 'void';
+methodType: 'int' | 'char' | 'bool' | 'void';
 methodDeclaration:
 	methodType ID '(' (parameter (',' parameter)*)? ')' block;
 
 parameter: parameterType ID;
 
-parameterType: 'int' | 'char' | 'boolean';
+parameterType: 'int' | 'char' | 'bool';
 
 block: '{' (varDeclaration)* (statement)* '}';
 
