@@ -1,0 +1,18 @@
+class Program
+{
+    void main()
+    {
+        int i;
+        i = 0;
+
+        if (true)
+        {
+            int i;
+        }
+        
+        while (i < 5)
+        {
+            i = i + 1;
+        }
+    }
+}

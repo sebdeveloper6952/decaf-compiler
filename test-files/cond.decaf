@@ -5,5 +5,7 @@ class Program
         true && true;
         0 < 1 || 1 < 2;
         !true;
+        1 == 2;
+        true != 1 + 2;
     }
 }

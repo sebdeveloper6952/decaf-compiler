@@ -418,7 +418,11 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
 }
 
 /**
+ * not_op expression
  * 
+ * not_op = { '!' }
+ * 
+ * expression must be of type bool.
  */
 void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
 {
@@ -448,6 +452,56 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
               << DataTypes::int_to_type(get_node_type(ctx))
               << "'"
               << std::endl;
+}
+
+/**
+ *
+ */
+void SymbolTableListener::enterExpr_eq(DecafParser::Expr_eqContext *ctx)
+{
+    std::cout << std::endl
+              << "enterExpr_eq" << std::endl;
+}
+
+/**
+ * expression eq_op expression
+ * 
+ * eq_op = { '==', '!=' }
+ * 
+ * Both expression must be of the same type;
+ */
+void SymbolTableListener::exitExpr_eq(DecafParser::Expr_eqContext *ctx)
+{
+    std::vector<DecafParser::ExpressionContext *> exprs = ctx->expression();
+
+    int left_type = get_node_type(exprs[0]);
+    if (exprs[0]->children.size() == 1)
+        left_type = get_node_type(exprs[0]->children[0]);
+
+    int right_type = get_node_type(exprs[1]);
+    if (exprs[1]->children.size() == 1)
+        right_type = get_node_type(exprs[1]->children[0]);
+
+    if (left_type != right_type)
+    {
+        put_node_type(ctx, T_ERROR);
+        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": '";
+        msg += ctx->eq_op()->getText() + "' operator must be applied to operands of the same type.";
+        msg += " Left operand has type '" + DataTypes::int_to_type(left_type);
+        msg += "', right operand has type '" + DataTypes::int_to_type(right_type) + "'";
+        print_error(msg);
+
+        return;
+    }
+
+    put_node_type(ctx, T_BOOL);
+    std::cout
+        << "exitExpr_eq: "
+        << ctx->getText()
+        << " has type '"
+        << DataTypes::int_to_type(get_node_type(ctx))
+        << "'"
+        << std::endl;
 }
 /// ---------------------------------------- Finish Expressions ----------------------------------------
 
