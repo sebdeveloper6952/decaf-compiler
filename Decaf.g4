@@ -43,7 +43,9 @@ statement:
 	| location '=' expression						# st_assignment
 	| expression? ';'								# st_expression;
 
-location: (ID | ID '[' expression ']') ('.' location)?;
+location:
+	ID										# loc_var
+	| ID '[' expression ']' ('.' location)?	# loc_array;
 
 expression:
 	location									# expr_loc

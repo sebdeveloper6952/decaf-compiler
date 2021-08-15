@@ -358,16 +358,38 @@ public:
   class  LocationContext : public antlr4::ParserRuleContext {
   public:
     LocationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *ID();
-    ExpressionContext *expression();
-    LocationContext *location();
+   
+    LocationContext() = default;
+    void copyFrom(LocationContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
 
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  Loc_varContext : public LocationContext {
+  public:
+    Loc_varContext(LocationContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
+  };
+
+  class  Loc_arrayContext : public LocationContext {
+  public:
+    Loc_arrayContext(LocationContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    ExpressionContext *expression();
+    LocationContext *location();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   LocationContext* location();

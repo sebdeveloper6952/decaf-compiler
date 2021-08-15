@@ -123,8 +123,8 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
     std::cout << this->table->get_name() << "->push(): " << id->getText() << std::endl;
 }
 
-// location
-void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
+/// ---------------------------------------- Var Locations ----------------------------------------
+void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
 {
     std::string id = ctx->ID()->getText();
     std::cout << std::endl
@@ -144,7 +144,23 @@ void SymbolTableListener::enterLocation(DecafParser::LocationContext *ctx)
     }
 }
 
-void SymbolTableListener::exitLocation(DecafParser::LocationContext *ctx) {}
+void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
+{
+    std::cout << std::endl
+              << "exitLoc_array" << std::endl;
+    DecafParser::ExpressionContext *expr = ctx->expression();
+    int expr_type = T_VOID;
+    if (expr->children.size() == 1)
+        expr_type = get_node_type(expr->children[0]);
+    else
+        expr_type = get_node_type(expr);
+    if (expr_type != T_INT)
+    {
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": array index must be of type 'INTEGER'";
+        print_error(msg);
+    }
+}
 
 /// ----------------------------------------  Method declaration ----------------------------------------
 

@@ -31,5 +31,8 @@ class Program
 		true + 1;
 		1 > 2;
 		1 > true;
+
+		array[0] = 1;
+		array[1>2] = 2;
     }
 }

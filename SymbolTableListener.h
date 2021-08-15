@@ -39,8 +39,8 @@ public:
     // statements
 
     // location
-    void enterLocation(DecafParser::LocationContext *ctx);
-    void exitLocation(DecafParser::LocationContext *ctx);
+    void enterLoc_var(DecafParser::Loc_varContext *ctx);
+    void exitLoc_array(DecafParser::Loc_arrayContext *ctx);
 
     // method declaration
     void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);

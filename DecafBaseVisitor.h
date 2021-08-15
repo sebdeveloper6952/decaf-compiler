@@ -87,7 +87,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitLocation(DecafParser::LocationContext *ctx) override {
+  virtual antlrcpp::Any visitLoc_var(DecafParser::Loc_varContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLoc_array(DecafParser::Loc_arrayContext *ctx) override {
     return visitChildren(ctx);
   }
 
