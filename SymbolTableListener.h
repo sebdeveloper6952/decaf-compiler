@@ -42,6 +42,7 @@ public:
     // location
     void exitLoc_var(DecafParser::Loc_varContext *ctx);
     void enterLoc_var(DecafParser::Loc_varContext *ctx);
+    void enterLoc_array(DecafParser::Loc_arrayContext *ctx);
     void exitLoc_array(DecafParser::Loc_arrayContext *ctx);
 
     // method declaration

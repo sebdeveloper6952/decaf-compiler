@@ -154,6 +154,33 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
               << std::endl;
 }
 
+void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
+{
+    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+
+    // validate ID exists
+    if (e == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": id '" + ctx->ID()->getText() + "' is not declared.";
+        print_error(msg);
+
+        return;
+    }
+
+    // validate ID refers to an array object
+    if (e->obj_type != O_ARRAY)
+    {
+        put_node_type(ctx, T_ERROR);
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": id '" + ctx->ID()->getText() + "' is not an array.";
+        print_error(msg);
+
+        return;
+    }
+}
+
 void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
 {
     std::cout << std::endl
@@ -409,6 +436,18 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     int expr_type = get_node_type(expr);
     if (expr->children.size() == 1)
         expr_type = get_node_type(expr->children[0]);
+
+    if (loc_type != expr_type)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": expression type: '" + DataTypes::int_to_type(expr_type);
+        msg += "' is incompatible with array type: '" + DataTypes::int_to_type(loc_type) + "'";
+        print_error(msg);
+
+        return;
+    }
 
     std::cout << std::endl
               << "exitSt_assignment: "

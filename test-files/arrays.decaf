@@ -1,0 +1,13 @@
+class Program
+{
+    void main()
+    {
+        int array[5];
+        int invalid_array[0];
+        int a;
+
+        array[0] = 1;
+        array[1] = true;
+        a[0] = 1;
+    }
+}
