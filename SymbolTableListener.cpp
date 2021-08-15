@@ -162,8 +162,6 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
 
         return;
     }
-
-    // validate size with declared size
 }
 
 /// ----------------------------------------  Method declaration ----------------------------------------
