@@ -40,6 +40,8 @@ public:
     void exitSt_assignment(DecafParser::St_assignmentContext *ctx);
     void enterSt_if(DecafParser::St_ifContext *ctx);
     void exitSt_if(DecafParser::St_ifContext *ctx);
+    void enterSt_while(DecafParser::St_whileContext *ctx);
+    void exitSt_while(DecafParser::St_whileContext *ctx);
 
     // location
     void exitLoc_var(DecafParser::Loc_varContext *ctx);

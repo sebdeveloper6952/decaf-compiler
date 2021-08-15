@@ -9,10 +9,25 @@ class Program
         {
             int i;
         }
+
+        if (1<2)
+        {
+            int i;
+        }
+
+        if (0)
+        {
+            int i;
+        }
         
         while (i < 5)
         {
             i = i + 1;
+        }
+
+        while ('a')
+        {
+            false;
         }
     }
 }

@@ -605,6 +605,87 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
               << std::endl;
 }
 
+void SymbolTableListener::enterSt_if(DecafParser::St_ifContext *ctx)
+{
+    std::cout << std::endl
+              << "enterSt_if"
+              << std::endl
+              << "\t"
+              << ctx->getText() << std::endl;
+}
+
+/**
+ * if '(' expression ')' block ('else' block)?
+ * 
+ * expression must be of type BOOL.
+ */
+void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
+{
+    DecafParser::ExpressionContext *expr = ctx->expression();
+
+    int expr_type = get_node_type(expr);
+    if (expr->children.size() == 1)
+        expr_type = get_node_type(expr->children[0]);
+
+    if (expr_type != T_BOOL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": if expression must be of type 'BOOL', '";
+        msg += DataTypes::int_to_type(expr_type) + "' found.";
+        print_error(msg);
+
+        return;
+    }
+
+    // TODO: node has type VOID
+    put_node_type(ctx, T_VOID);
+
+    std::cout << "exitSt_if: has type: '"
+              << DataTypes::int_to_type(get_node_type(ctx))
+              << "'"
+              << std::endl;
+}
+
+void SymbolTableListener::enterSt_while(DecafParser::St_whileContext *ctx)
+{
+    std::cout << std::endl
+              << "enterSt_while"
+              << std::endl
+              << "\t"
+              << ctx->getText() << std::endl;
+}
+
+void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
+{
+    DecafParser::ExpressionContext *expr = ctx->expression();
+
+    int expr_type = get_node_type(expr);
+    if (expr->children.size() == 1)
+        expr_type = get_node_type(expr->children[0]);
+
+    if (expr_type != T_BOOL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": if expression must be of type 'BOOL', '";
+        msg += DataTypes::int_to_type(expr_type) + "' found.";
+        print_error(msg);
+
+        return;
+    }
+
+    // TODO: node has type VOID
+    put_node_type(ctx, T_VOID);
+
+    std::cout << "exitSt_while: has type: '"
+              << DataTypes::int_to_type(get_node_type(ctx))
+              << "'"
+              << std::endl;
+}
+
 /// --------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Private auxiliary methods ----------------------------------------
