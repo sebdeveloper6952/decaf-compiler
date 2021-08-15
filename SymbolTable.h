@@ -13,7 +13,6 @@ private:
     std::map<std::string, SymbolTableEntry *> table;
     SymbolTable *parent;
     std::string name;
-    int type_to_int(std::string type);
 
 public:
     SymbolTable() = default;

@@ -37,7 +37,6 @@ public:
     void exitBlock(DecafParser::BlockContext *ctx);
 
     // statements
-    void exitSt_return(DecafParser::St_returnContext *ctx);
 
     // location
     void enterLocation(DecafParser::LocationContext *ctx);

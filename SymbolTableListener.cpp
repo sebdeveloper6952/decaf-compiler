@@ -176,7 +176,65 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
 }
 /// -----------------------------------------------------------------------------------------------------
 
-void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx) {}
+void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx)
+{
+    std::cout << "exitMethodDeclaration" << std::endl;
+    // get symbol table entry for this method
+    SymbolTableEntry *entry = this->table->get(ctx->ID()->getText());
+
+    // get the method block statements
+    std::vector<DecafParser::StatementContext *> block = ctx->block()->statement();
+
+    // get the return statement
+    DecafParser::St_returnContext *ec = NULL;
+    for (DecafParser::StatementContext *c : block)
+    {
+        if (c->getText().find("return") != std::string::npos)
+        {
+            ec = (DecafParser::St_returnContext *)c;
+            std::cout << "\treturn statement found: " << ec->getText() << std::endl;
+
+            break;
+        }
+    }
+
+    // method type is void and no return expression found
+    if (ec == NULL && entry->data_type == T_VOID)
+    {
+        put_node_type(ctx, T_VOID);
+        std::cout << "\tNo return statement found and method type is 'VOID'." << std::endl;
+
+        return;
+    }
+
+    std::cout << "here1" << std::endl;
+    DecafParser::ExpressionContext *ret_expr = ec->expression();
+    int ret_type = T_VOID;
+    // return has an expression
+    if (ret_expr != NULL)
+    {
+        ret_type = get_node_type(ret_expr->children[0]);
+        std::cout << "\treturn expression: " << ret_expr->getText() << std::endl;
+    }
+
+    if (entry->data_type != ret_type)
+    {
+        put_node_type(ctx, T_ERROR);
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": return type: '" + DataTypes::int_to_type(ret_type);
+        msg += "' not compatible with method type: '" + DataTypes::int_to_type(entry->data_type);
+        msg += "'";
+        print_error(msg);
+
+        return;
+    }
+
+    // all previous checks passed, method type and return type are correct
+    put_node_type(ctx, ret_type);
+    std::cout << "\tMethod type: '" + DataTypes::int_to_type(entry->data_type)
+              << "' is compatible with return type '" << DataTypes::int_to_type(ret_type)
+              << "'" << std::endl;
+}
 
 /// ---------------------------------------- Expressions ----------------------------------------
 void SymbolTableListener::enterExpr_arith_0(DecafParser::Expr_arith_0Context *ctx)
@@ -311,57 +369,6 @@ void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx
 /// ---------------------------------------- Finish Literals ----------------------------------------
 
 /// ---------------------------------------- Statements ----------------------------------------
-void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
-{
-    std::cout << "exitSt_return" << std::endl;
-
-    // validate an ancestor is a method
-    antlr4::tree::ParseTree *parent = ctx->parent;
-    while (parent != NULL)
-    {
-        // node in question is a method declaration
-        if (((antlr4::ParserRuleContext *)parent)->getRuleIndex() == DecafParser::RuleMethodDeclaration)
-        {
-            break;
-        }
-        parent = parent->parent;
-    }
-    // return statement was made outside of methodDeclaration
-    if (parent == NULL)
-    {
-        put_node_type(ctx, T_ERROR);
-        std::string msg = "return statement must be inside a method block.";
-
-        return;
-    }
-
-    // get return type of method
-    DecafParser::MethodDeclarationContext *method = (DecafParser::MethodDeclarationContext *)parent;
-    SymbolTableEntry *entry = this->table->get(method->ID()->getText());
-    std::cout << "\treturn statement found inside "
-              << entry->id
-              << " | "
-              << entry->data_type
-              << std::endl;
-
-    // validate return type expression
-    DecafParser::ExpressionContext *expr = ctx->expression();
-    if (expr != NULL && expr->children.size() > 0)
-    {
-        int expr_type = get_node_type(expr->children[0]);
-        if (entry->data_type != expr_type)
-        {
-            std::string msg = "return expression of type: " + expr_type;
-            msg += " is incompatible with method type of: " + entry->data_type;
-            print_error(msg);
-        }
-        else
-        {
-            std::cout << "\treturn type is compatible with method type."
-                      << std::endl;
-        }
-    }
-}
 /// --------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Private auxiliary methods ----------------------------------------

@@ -13,3 +13,11 @@
 #define T_BOOL 2
 #define T_CHAR 3
 #define T_ERROR 4
+#define T_VOID 5
+
+class DataTypes
+{
+public:
+    static std::string int_to_type(int type);
+    static int type_to_int(std::string type);
+};

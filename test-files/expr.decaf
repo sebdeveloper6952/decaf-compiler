@@ -5,6 +5,18 @@ class Program
 		return 1;
 	}
 
+	void process()
+	{
+		int a;
+		a = 1;
+
+		return;
+	}
+
+	void process2()
+	{
+	}
+
 	void main()
 	{
 		int a;
