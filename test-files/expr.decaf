@@ -2,6 +2,9 @@ class Program
 {
 	int return_one()
 	{
+		int a;
+		a = 1;
+		
 		return 1;
 	}
 
@@ -32,7 +35,9 @@ class Program
 		1 > 2;
 		1 > true;
 
-		array[0] = 1;
-		array[1>2] = 2;
+		array0[0] = 1;
+		array0[1>2] = 2;
+
+		a[0] = 1;
     }
 }

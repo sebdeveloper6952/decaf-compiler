@@ -37,8 +37,10 @@ public:
     void exitBlock(DecafParser::BlockContext *ctx);
 
     // statements
+    void exitSt_assignment(DecafParser::St_assignmentContext *ctx);
 
     // location
+    void exitLoc_var(DecafParser::Loc_varContext *ctx);
     void enterLoc_var(DecafParser::Loc_varContext *ctx);
     void exitLoc_array(DecafParser::Loc_arrayContext *ctx);
 

@@ -1,24 +1,7 @@
 class Program 
 {
-	int a;
-
-	boolean cmp(int a, int b)
-	{
-		boolean c;
-		c = a == b;
-
-		return c;
-	}
-
-	void main(void)
+	void main()
 	{
 		int i;
-		boolean t;
-
-        t = true;
-
-        i = 2 + 3 * 5;
-
-		cmp(1, 2);
     }
 }

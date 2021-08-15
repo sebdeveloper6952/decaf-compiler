@@ -26,7 +26,7 @@ bool SymbolTable::put(
     std::string const &type,
     size_t size)
 {
-    std::cout << "[ST]: put(): " << id << std::endl;
+    std::cout << "[ST '" << this->name << "']: put(): " << id << std::endl;
     if (this->table.count(id))
         return false;
 
@@ -62,7 +62,7 @@ SymbolTableEntry *SymbolTable::get(std::string const &id)
     SymbolTable *top = this;
     while (top != NULL)
     {
-        std::cout << "searching " << id << " in " << top->get_name() << std::endl;
+        std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
 
         if (top->table.count(id))
             return top->table[id];

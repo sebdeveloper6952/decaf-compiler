@@ -80,8 +80,6 @@ void SymbolTableListener::enterVar_decl(DecafParser::Var_declContext *ctx)
 
         return;
     }
-
-    std::cout << this->table->get_name() << "->push(): " << id->getText() << std::endl;
 }
 
 /**
@@ -121,6 +119,9 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
 }
 
 /// ---------------------------------------- Var Locations ----------------------------------------
+/**
+ * Check if var id exists in symbol table.
+ */
 void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
 {
     std::string id = ctx->ID()->getText();
@@ -139,6 +140,18 @@ void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
     {
         std::cout << id << " was found" << std::endl;
     }
+}
+
+/**
+ * Set node type of this location node.
+ */
+void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
+{
+    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+    put_node_type(ctx, e->data_type);
+    std::cout << "exitLoc_var: type: "
+              << DataTypes::int_to_type(get_node_type(ctx))
+              << std::endl;
 }
 
 void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
@@ -162,6 +175,10 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
 
         return;
     }
+
+    // set this node type as the type of the array
+    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+    put_node_type(ctx, e->data_type);
 }
 
 /// ----------------------------------------  Method declaration ----------------------------------------
@@ -185,11 +202,6 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
 
     if (this->table->put(O_METHOD, id, method_type))
     {
-        std::cout << "methodDeclaration saved in symbol table: "
-                  << method_type
-                  << "|"
-                  << id
-                  << std::endl;
     }
 }
 /// -----------------------------------------------------------------------------------------------------
@@ -387,6 +399,26 @@ void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx
 /// ---------------------------------------- Finish Literals ----------------------------------------
 
 /// ---------------------------------------- Statements ----------------------------------------
+void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *ctx)
+{
+    DecafParser::LocationContext *loc = ctx->location();
+    DecafParser::ExpressionContext *expr = ctx->expression();
+
+    int loc_type = get_node_type(loc);
+
+    int expr_type = get_node_type(expr);
+    if (expr->children.size() == 1)
+        expr_type = get_node_type(expr->children[0]);
+
+    std::cout << std::endl
+              << "exitSt_assignment: "
+              << ctx->getText()
+              << " " << DataTypes::int_to_type(loc_type)
+              << " = "
+              << DataTypes::int_to_type(expr_type)
+              << std::endl;
+}
+
 /// --------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Private auxiliary methods ----------------------------------------
