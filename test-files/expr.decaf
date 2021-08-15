@@ -20,10 +20,10 @@ class Program
 	void main()
 	{
 		int a;
+		int array0[5];
 		int b;
 		int i;
-		int array[5];
-		int array_1[0];
+		int array1[0];
 
 		a + b;
         i = 1 + 2;

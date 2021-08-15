@@ -21,7 +21,11 @@ public:
     size_t get_offset();
     SymbolTable *get_parent();
     std::string const &get_name();
-    bool put(int s_type, std::string const &id, std::string const &type);
+    bool put(
+        int s_type,
+        std::string const &id,
+        std::string const &type,
+        size_t size = 0);
     SymbolTableEntry *get(std::string const &lexeme);
     bool rm(std::string const &lexeme);
     void print_table();

@@ -20,4 +20,5 @@ class DataTypes
 public:
     static std::string int_to_type(int type);
     static int type_to_int(std::string type);
+    static std::string int_to_obj_type(int type);
 };

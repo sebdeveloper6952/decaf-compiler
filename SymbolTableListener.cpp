@@ -110,17 +110,14 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
         return;
     }
 
-    if (!this->table->put(O_ARRAY, id->getText(), var_type->getText()))
+    size_t size = std::stoi(array_size->getText());
+    if (!this->table->put(O_ARRAY, id->getText(), var_type->getText(), size))
     {
-        std::cout << "error: varDeclaration id ("
-                  << id->getText()
-                  << ") is already declared."
-                  << std::endl;
+        std::string msg = "varDeclaration id (" + id->getText() + ") is already declared.";
+        print_error(msg);
 
         return;
     }
-
-    std::cout << this->table->get_name() << "->push(): " << id->getText() << std::endl;
 }
 
 /// ---------------------------------------- Var Locations ----------------------------------------
@@ -154,12 +151,19 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
         expr_type = get_node_type(expr->children[0]);
     else
         expr_type = get_node_type(expr);
+
+    // expression must be of type integer
     if (expr_type != T_INT)
     {
+        put_node_type(ctx, T_ERROR);
         std::string msg = "in line " + std::to_string(ctx->start->getLine());
         msg += ": array index must be of type 'INTEGER'";
         print_error(msg);
+
+        return;
     }
+
+    // validate size with declared size
 }
 
 /// ----------------------------------------  Method declaration ----------------------------------------
