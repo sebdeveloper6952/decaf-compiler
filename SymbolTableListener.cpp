@@ -229,6 +229,12 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
 
     if (this->table->put(O_METHOD, id, method_type))
     {
+        // get method params
+        std::vector<DecafParser::ParameterContext *> params = ctx->parameter();
+        for (DecafParser::ParameterContext *param : params)
+        {
+            this->table->add_method_param(id, param->parameterType()->getText());
+        }
     }
 }
 
@@ -318,8 +324,42 @@ void SymbolTableListener::enterMethodCall(DecafParser::MethodCallContext *ctx)
 
 void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
 {
-    std::cout
-        << "exitMethodCall" << std::endl;
+    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+
+    // validate method parameters
+    std::vector<DecafParser::ExpressionContext *> a_params = ctx->expression();
+    if (e->m_params.size() != a_params.size())
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": expected " + std::to_string(e->m_params.size()) + " parameters, but found ";
+        msg += std::to_string(a_params.size());
+        print_error(msg);
+
+        return;
+    }
+
+    // validate type of parameters
+    for (int i = 0; i < e->m_params.size(); i++)
+    {
+        int a_type = get_node_type(a_params[i]);
+        if (a_params[i]->children.size() == 1)
+            a_type = get_node_type(a_params[i]->children[0]);
+
+        if (e->m_params[i] != a_type)
+        {
+            put_node_type(ctx, T_ERROR);
+
+            std::string msg = "in line " + std::to_string(ctx->start->getLine());
+            msg += ": actual parameter type '" + DataTypes::int_to_type(a_type);
+            msg += "' differs from formal parameter type '" + DataTypes::int_to_type(e->m_params[i]);
+            msg += "'";
+            print_error(msg);
+
+            return;
+        }
+    }
 }
 
 /// -----------------------------------------------------------------------------------------------------

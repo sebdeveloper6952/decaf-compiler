@@ -28,5 +28,6 @@ public:
         size_t size = 0);
     SymbolTableEntry *get(std::string const &lexeme);
     bool rm(std::string const &lexeme);
+    bool add_method_param(std::string id, std::string type);
     void print_table();
 };

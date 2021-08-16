@@ -79,6 +79,27 @@ bool SymbolTable::rm(std::string const &id)
     return true;
 }
 
+bool SymbolTable::add_method_param(std::string id, std::string type)
+{
+    if (this->table.count(id) == 0)
+        return false;
+
+    int p_type = DataTypes::type_to_int(type);
+    this->table[id]->m_params.push_back(p_type);
+
+    std::cout
+        << "[ST '"
+        << this->name
+        << "']: add_param: ("
+        << id
+        << ", "
+        << type
+        << ")"
+        << std::endl;
+
+    return true;
+}
+
 void SymbolTable::print_table()
 {
     for (const auto &elem : this->table)

@@ -1,0 +1,12 @@
+class Program
+{
+    void m(int i, int j)
+    {}
+
+    void main()
+    {
+        m(0, 1);
+        m();
+        m(true, 1);
+    }
+}
