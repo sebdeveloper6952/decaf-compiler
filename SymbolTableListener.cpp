@@ -231,7 +231,6 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
     {
     }
 }
-/// -----------------------------------------------------------------------------------------------------
 
 void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx)
 {
@@ -246,7 +245,7 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     DecafParser::St_returnContext *ec = NULL;
     for (DecafParser::StatementContext *c : block)
     {
-        if (c->getText().find("return") != std::string::npos)
+        if (DecafParser::St_returnContext *d = dynamic_cast<DecafParser::St_returnContext *>(c))
         {
             ec = (DecafParser::St_returnContext *)c;
             std::cout << "\treturn statement found: " << ec->getText() << std::endl;
@@ -264,7 +263,6 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
         return;
     }
 
-    std::cout << "here1" << std::endl;
     DecafParser::ExpressionContext *ret_expr = ec->expression();
     int ret_type = T_VOID;
     // return has an expression
@@ -292,6 +290,39 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
               << "' is compatible with return type '" << DataTypes::int_to_type(ret_type)
               << "'" << std::endl;
 }
+/// -----------------------------------------------------------------------------------------------------
+
+/// ---------------------------------------- Method Calls ----------------------------------------
+void SymbolTableListener::enterMethodCall(DecafParser::MethodCallContext *ctx)
+{
+    std::cout << std::endl
+              << "enterMethodCall" << std::endl;
+
+    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+
+    // method not declared
+    if (e == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + ctx->start->getLine();
+        msg += ": method '" + ctx->ID()->getText() + "' is not declared.";
+        print_error(msg);
+
+        return;
+    }
+
+    // set method call type to method declared type
+    put_node_type(ctx, e->data_type);
+}
+
+void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
+{
+    std::cout
+        << "exitMethodCall" << std::endl;
+}
+
+/// -----------------------------------------------------------------------------------------------------
 
 /// ---------------------------------------- Expressions ----------------------------------------
 void SymbolTableListener::enterExpr_arith_0(DecafParser::Expr_arith_0Context *ctx)
@@ -503,7 +534,35 @@ void SymbolTableListener::exitExpr_eq(DecafParser::Expr_eqContext *ctx)
         << "'"
         << std::endl;
 }
-/// ---------------------------------------- Finish Expressions ----------------------------------------
+
+void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callContext *ctx)
+{
+    SymbolTableEntry *e = this->table->get(ctx->methodCall()->ID()->getText());
+
+    // method not declared
+    if (e == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + ctx->start->getLine();
+        msg += ": method '" + ctx->methodCall()->ID()->getText() + "' not declared.";
+        print_error(msg);
+
+        return;
+    }
+
+    if (e->data_type == T_VOID)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        msg += ": method '" + ctx->methodCall()->ID()->getText() + "' has return type of 'void',";
+        msg += " not allowed in an expression.";
+        print_error(msg);
+    }
+}
+
+/// ----------------------------------------------------------------------------------------------------
 
 /// ---------------------------------------- Literals ----------------------------------------
 void SymbolTableListener::enterLiteral(DecafParser::LiteralContext *ctx)
@@ -590,7 +649,7 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
 
         std::string msg = "in line " + std::to_string(ctx->start->getLine());
         msg += ": expression type: '" + DataTypes::int_to_type(expr_type);
-        msg += "' is incompatible with array type: '" + DataTypes::int_to_type(loc_type) + "'";
+        msg += "' is incompatible with type: '" + DataTypes::int_to_type(loc_type) + "'";
         print_error(msg);
 
         return;

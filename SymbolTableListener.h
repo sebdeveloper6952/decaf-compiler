@@ -53,6 +53,10 @@ public:
     void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
     void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
 
+    // method calls
+    void enterMethodCall(DecafParser::MethodCallContext *ctx);
+    void exitMethodCall(DecafParser::MethodCallContext *ctx);
+
     // expressions
     void enterExpression(DecafParser::ExpressionContext *ctx);
     void exitExpression(DecafParser::ExpressionContext *ctx);
@@ -67,7 +71,9 @@ public:
     void exitExpr_not(DecafParser::Expr_notContext *ctx);
     void enterExpr_eq(DecafParser::Expr_eqContext *ctx);
     void exitExpr_eq(DecafParser::Expr_eqContext *ctx);
+    void exitExpr_method_call(DecafParser::Expr_method_callContext *ctx);
 
+    // literals
     void enterLiteral(DecafParser::LiteralContext *ctx);
     void exitLiteral(DecafParser::LiteralContext *ctx);
     void enterInt_literal(DecafParser::Int_literalContext *ctx);

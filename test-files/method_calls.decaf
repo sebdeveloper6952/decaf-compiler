@@ -1,0 +1,30 @@
+class Program
+{
+    int return_one()
+    {
+        return 1;
+    }
+
+    bool return_bool()
+    {
+        return true;
+    }
+
+    void return_void()
+    {
+        int a;
+    }
+
+    void main()
+    {
+        int i;
+        i = 0 + return_one();
+
+        if (return_bool())
+        {
+            int a;
+        }
+
+        i = return_void();
+    }
+}

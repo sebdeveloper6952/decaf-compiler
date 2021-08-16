@@ -6,13 +6,13 @@ std::string DataTypes::int_to_type(int type)
 {
     std::string t = "error";
     if (type == T_INT)
-        t = "INTEGER";
+        t = "int";
     if (type == T_BOOL)
-        t = "BOOLEAN";
+        t = "bool";
     if (type == T_CHAR)
-        t = "CHAR";
+        t = "char";
     if (type == T_VOID)
-        t = "VOID";
+        t = "void";
     return t;
 }
 
@@ -20,7 +20,7 @@ int DataTypes::type_to_int(std::string type)
 {
     if (type == "int")
         return T_INT;
-    if (type == "boolean")
+    if (type == "bool")
         return T_BOOL;
     if (type == "char")
         return T_CHAR;

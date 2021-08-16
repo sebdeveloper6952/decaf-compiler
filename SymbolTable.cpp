@@ -44,7 +44,7 @@ bool SymbolTable::put(
     size_t new_offset = 0;
     if (type == "int")
         new_offset += W_INT;
-    else if (type == "boolean")
+    else if (type == "bool")
         new_offset += W_BOOL;
     else if (type == "char")
         new_offset += W_CHAR;
