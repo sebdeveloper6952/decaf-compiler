@@ -1,0 +1,22 @@
+class Program
+{
+    struct Inner
+    {
+        int a;
+        bool visited;
+    };
+
+    struct Vertex
+    {
+        int x;
+        int y;
+        int z;
+    };
+
+    void main()
+    {
+        struct Vertex p;
+
+        p.x = 0;
+    }
+}

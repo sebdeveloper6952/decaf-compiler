@@ -1,7 +1,5 @@
 #include <iostream>
-
 #include "SymbolTable.h"
-#include "SymbolTableEntry.h"
 #include "DataTypes.h"
 
 SymbolTable::SymbolTable(SymbolTable *parent, std::string const &name)
@@ -100,6 +98,44 @@ bool SymbolTable::add_method_param(std::string id, std::string type)
     return true;
 }
 
+/**
+ * 
+ */
+bool SymbolTable::add_struct_table(std::string id, SymbolTable *table)
+{
+    this->struct_tables[id] = table;
+
+    return true;
+}
+
+/**
+ */
+SymbolTable *SymbolTable::get_struct_table(std::string id)
+{
+    std::cout
+        << "[ST '"
+        << this->name
+        << "']: get_struct_table: '"
+        << id
+        << "'"
+        << std::endl;
+
+    SymbolTable *top = this;
+    while (top != NULL)
+    {
+        std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
+
+        if (top->table.count(id))
+            return top->struct_tables[id];
+        top = top->parent;
+    }
+
+    return NULL;
+}
+
+/**
+ * Print the entries of a symbol table.
+ */
 void SymbolTable::print_table()
 {
     for (const auto &elem : this->table)

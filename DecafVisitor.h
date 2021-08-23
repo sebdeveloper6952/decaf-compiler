@@ -27,6 +27,8 @@ public:
 
     virtual antlrcpp::Any visitVar_arr_decl(DecafParser::Var_arr_declContext *context) = 0;
 
+    virtual antlrcpp::Any visitVar_struct_decl(DecafParser::Var_struct_declContext *context) = 0;
+
     virtual antlrcpp::Any visitStructDeclaration(DecafParser::StructDeclarationContext *context) = 0;
 
     virtual antlrcpp::Any visitVarType(DecafParser::VarTypeContext *context) = 0;
@@ -58,6 +60,8 @@ public:
     virtual antlrcpp::Any visitLoc_var(DecafParser::Loc_varContext *context) = 0;
 
     virtual antlrcpp::Any visitLoc_array(DecafParser::Loc_arrayContext *context) = 0;
+
+    virtual antlrcpp::Any visitLoc_member(DecafParser::Loc_memberContext *context) = 0;
 
     virtual antlrcpp::Any visitExpr_literal(DecafParser::Expr_literalContext *context) = 0;
 

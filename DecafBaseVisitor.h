@@ -31,6 +31,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitVar_struct_decl(DecafParser::Var_struct_declContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitStructDeclaration(DecafParser::StructDeclarationContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -92,6 +96,10 @@ public:
   }
 
   virtual antlrcpp::Any visitLoc_array(DecafParser::Loc_arrayContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLoc_member(DecafParser::Loc_memberContext *ctx) override {
     return visitChildren(ctx);
   }
 

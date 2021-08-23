@@ -2,8 +2,6 @@
 #include <iostream>
 #include <vector>
 
-#pragma once
-
 class SymbolTableEntry
 {
     friend std::ostream &operator<<(std::ostream &_stream, SymbolTableEntry const &mc);

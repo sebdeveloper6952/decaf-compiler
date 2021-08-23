@@ -112,6 +112,19 @@ public:
    
   };
 
+  class  Var_struct_declContext : public VarDeclarationContext {
+  public:
+    Var_struct_declContext(VarDeclarationContext *ctx);
+
+    antlr4::tree::TerminalNode *STRUCT();
+    std::vector<antlr4::tree::TerminalNode *> ID();
+    antlr4::tree::TerminalNode* ID(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  Var_declContext : public VarDeclarationContext {
   public:
     Var_declContext(VarDeclarationContext *ctx);
@@ -161,9 +174,6 @@ public:
   public:
     VarTypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *STRUCT();
-    antlr4::tree::TerminalNode *ID();
-    StructDeclarationContext *structDeclaration();
     antlr4::tree::TerminalNode *VOID();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -379,13 +389,24 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  Loc_memberContext : public LocationContext {
+  public:
+    Loc_memberContext(LocationContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    LocationContext *location();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  Loc_arrayContext : public LocationContext {
   public:
     Loc_arrayContext(LocationContext *ctx);
 
     antlr4::tree::TerminalNode *ID();
     ExpressionContext *expression();
-    LocationContext *location();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 

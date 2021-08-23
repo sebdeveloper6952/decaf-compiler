@@ -1,18 +1,18 @@
+#pragma once
 #include <cstddef>
 #include <map>
 #include <string>
 #include "SymbolTableEntry.h"
-
-#pragma once
 
 class SymbolTable
 {
 private:
     std::size_t num_entries = 0;
     std::size_t offset = 0;
-    std::map<std::string, SymbolTableEntry *> table;
     SymbolTable *parent;
     std::string name;
+    std::map<std::string, SymbolTableEntry *> table;
+    std::map<std::string, SymbolTable *> struct_tables;
 
 public:
     SymbolTable() = default;
@@ -29,5 +29,7 @@ public:
     SymbolTableEntry *get(std::string const &lexeme);
     bool rm(std::string const &lexeme);
     bool add_method_param(std::string id, std::string type);
+    bool add_struct_table(std::string id, SymbolTable *table);
+    SymbolTable *get_struct_table(std::string id);
     void print_table();
 };

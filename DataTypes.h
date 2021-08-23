@@ -8,6 +8,7 @@
 #define O_METHOD 1
 #define O_STRUCT 2
 #define O_ARRAY 3
+#define O_STRUCT_I 4
 
 #define T_INT 1
 #define T_BOOL 2

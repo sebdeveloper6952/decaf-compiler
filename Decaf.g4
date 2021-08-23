@@ -12,17 +12,12 @@ declaration:
 
 varDeclaration:
 	varType ID ';'					# var_decl
-	| varType ID '[' NUM ']' ';'	# var_arr_decl;
+	| varType ID '[' NUM ']' ';'	# var_arr_decl
+	| 'struct' ID ID ';'			# var_struct_decl;
 
 structDeclaration: 'struct' ID '{' (varDeclaration)* '}' ';';
 
-varType:
-	'int'
-	| 'char'
-	| 'bool'
-	| 'struct' ID
-	| structDeclaration
-	| 'void';
+varType: 'int' | 'char' | 'bool' | 'void';
 
 methodType: 'int' | 'char' | 'bool' | 'void';
 methodDeclaration:
@@ -44,8 +39,9 @@ statement:
 	| expression? ';'								# st_expression;
 
 location:
-	ID										# loc_var
-	| ID '[' expression ']' ('.' location)?	# loc_array;
+	ID						# loc_var
+	| ID '[' expression ']'	# loc_array
+	| ID '.' location		# loc_member;
 
 expression:
 	location									# expr_loc

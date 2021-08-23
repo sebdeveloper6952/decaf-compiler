@@ -118,27 +118,126 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
     }
 }
 
+void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declContext *ctx)
+{
+    std::cout << std::endl
+              << "enterVar_struct_decl" << std::endl;
+
+    std::vector<antlr4::tree::TerminalNode *> ids = ctx->ID();
+    std::string struct_type = ids[0]->getText();
+    std::string struct_id = ids[1]->getText();
+
+    // get struct type from symbol table
+    std::cout << "\tget table for struct: " << struct_type << std::endl;
+    SymbolTable *struct_table = this->table->get_struct_table(struct_type);
+
+    // check for struct type validity
+    if (struct_table == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+        std::cout << "\ttable for struct: '" << struct_type << "' not found." << std::endl;
+
+        return;
+    }
+
+    // save new variable of type struct
+    this->table->put(
+        O_STRUCT_I,
+        struct_id,
+        struct_type,
+        0);
+}
+
+void SymbolTableListener::exitVar_struct_decl(DecafParser::Var_struct_declContext *ctx)
+{
+    std::cout
+        << "exitVar_struct_decl" << std::endl;
+}
+
+/// ---------------------------------------- Struct Declaration -----------------------------------
+void SymbolTableListener::enterStructDeclaration(DecafParser::StructDeclarationContext *ctx)
+{
+    std::cout << std::endl
+              << "enterStructDeclaration: " << ctx->getText() << std::endl;
+    std::cout << "\tinsert this struct type into the custom types table." << std::endl;
+
+    // new symbol table for this struct scope
+    this->push_table();
+}
+
+void SymbolTableListener::exitStructDeclaration(DecafParser::StructDeclarationContext *ctx)
+{
+    std::string id = ctx->ID()->getText();
+
+    // get this struct symbol table
+    SymbolTable *table = this->pop_table();
+
+    // save the struct declaration as a new type
+    this->table->put(
+        O_STRUCT,
+        id,
+        "struct",
+        0);
+
+    this->table->add_struct_table(id, table);
+
+    std::cout << "exitStructDeclaration"
+              << std::endl
+              << "\tgot table: " << table->get_name()
+              << std::endl;
+}
+
+/// -----------------------------------------------------------------------------------------------
+
 /// ---------------------------------------- Var Locations ----------------------------------------
 /**
  * Check if var id exists in symbol table.
  */
 void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
 {
-    std::string id = ctx->ID()->getText();
-    std::cout << std::endl
-              << "enterLocation: " << id << std::endl;
-
-    SymbolTableEntry *entry = this->table->get(id);
-    if (entry == NULL)
+    // parent is location member, search in struct symbol tables
+    if (DecafParser::Loc_memberContext *d =
+            dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
-        std::cout << "error: id ("
-                  << id
-                  << ") no declaration found."
-                  << std::endl;
+        std::string struct_name = d->ID()->getText();
+        SymbolTableEntry *e = this->table->get(struct_name);
+        if (e == NULL)
+        {
+            return;
+        }
+
+        SymbolTable *struct_table = this->table->get_struct_table(e->type);
+        if (struct_table == NULL)
+        {
+            return;
+        }
+
+        std::cout << "\tparent is struct '"
+                  << e->type
+                  << "', search in its symbol table." << std::endl;
     }
     else
     {
-        std::cout << id << " was found" << std::endl;
+        std::string id = ctx->ID()->getText();
+
+        std::cout << std::endl
+                  << "enterLocation:"
+                  << "\t" << ctx->getText() << std::endl
+                  << "\t" << id
+                  << std::endl;
+
+        SymbolTableEntry *entry = this->table->get(id);
+        if (entry == NULL)
+        {
+            std::cout << "error: id '"
+                      << id
+                      << "' no declaration found."
+                      << std::endl;
+        }
+        else
+        {
+            std::cout << id << " was found" << std::endl;
+        }
     }
 }
 
@@ -147,11 +246,50 @@ void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
  */
 void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
 {
-    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
-    put_node_type(ctx, e->data_type);
-    std::cout << "exitLoc_var: type: "
-              << DataTypes::int_to_type(get_node_type(ctx))
-              << std::endl;
+    if (DecafParser::Loc_memberContext *d =
+            dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
+    {
+        SymbolTable *top = this->struct_tables.top();
+
+        std::cout << "\tsearching '"
+                  << ctx->ID()->getText()
+                  << "' in struct symbol table '"
+                  << top->get_name()
+                  << "'" << std::endl;
+
+        SymbolTableEntry *e = top->get(ctx->ID()->getText());
+        if (e == NULL)
+        {
+            put_node_type(ctx, T_ERROR);
+
+            return;
+        }
+
+        put_node_type(ctx, e->data_type);
+        put_node_type(ctx->parent, e->data_type);
+
+        std::cout << "'" << ctx->ID()->getText()
+                  << "' is a valid member of '"
+                  << top->get_name() << "' with type '"
+                  << e->type << "'"
+                  << std::endl;
+    }
+    else
+    {
+        SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+        if (e == NULL)
+        {
+            put_node_type(ctx, T_ERROR);
+
+            return;
+        }
+
+        put_node_type(ctx, e->data_type);
+
+        std::cout << "exitLoc_var: type: "
+                  << DataTypes::int_to_type(get_node_type(ctx))
+                  << std::endl;
+    }
 }
 
 void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
@@ -206,6 +344,49 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     // set this node type as the type of the array
     SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
     put_node_type(ctx, e->data_type);
+}
+
+void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
+{
+    std::string var_name = ctx->ID()->getText();
+
+    std::cout << std::endl
+              << "enterLoc_member" << std::endl
+              << "\t" << ctx->getText() << std::endl
+              << "\tget table for struct: "
+              << var_name
+              << std::endl;
+
+    // validate var_name exists
+    SymbolTableEntry *e = this->table->get(var_name);
+    if (e == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        return;
+    }
+
+    // var_name is a struct, get its struct symbol table
+    SymbolTable *struct_table = this->table->get_struct_table(e->type);
+    if (struct_table == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        return;
+    }
+
+    std::cout << "\tfound table for struct '"
+              << e->id << "'"
+              << std::endl;
+
+    this->push_struct_table(struct_table);
+}
+
+void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
+{
+    std::cout << "exitLoc_member" << std::endl;
+
+    this->pop_struct_table();
 }
 
 /// ----------------------------------------  Method declaration ----------------------------------------
@@ -813,7 +994,7 @@ void SymbolTableListener::push_table()
               << std::endl;
 }
 
-void SymbolTableListener::pop_table()
+SymbolTable *SymbolTableListener::pop_table()
 {
     // pop the top table
     SymbolTable *old = this->table;
@@ -822,6 +1003,8 @@ void SymbolTableListener::pop_table()
     std::cout << "pop(): " << old->get_name() << " | contents:" << std::endl;
     old->print_table();
     std::cout << "----------------------------------------------------" << std::endl;
+
+    return old;
 }
 
 void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx)
@@ -857,6 +1040,19 @@ void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx
             << " is a valid arithmetic expression."
             << std::endl;
     }
+}
+
+void SymbolTableListener::push_struct_table(SymbolTable *table)
+{
+    this->struct_tables.push(table);
+}
+
+SymbolTable *SymbolTableListener::pop_struct_table()
+{
+    SymbolTable *top = this->struct_tables.top();
+    this->struct_tables.pop();
+
+    return top;
 }
 
 void SymbolTableListener::print_error(std::string msg)
