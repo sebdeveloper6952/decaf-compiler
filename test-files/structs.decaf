@@ -18,5 +18,6 @@ class Program
         struct Vertex p;
 
         p.x = 0;
+        p.y = 1;
     }
 }

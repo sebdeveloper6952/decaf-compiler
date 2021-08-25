@@ -14,14 +14,16 @@ using namespace antlr4;
 
 int main(int argc, const char *argv[])
 {
-    std::ifstream stream;
-
     // TODO: validate argv length
     // open file specified.
-    stream.open(argv[1]);
+    // std::ifstream stream;
+    // stream.open(argv[1]);
+
+    std::stringstream ss;
+    ss << argv[1];
 
     // input stream
-    ANTLRInputStream input(stream);
+    ANTLRInputStream input(ss);
 
     // Create a lexer which scans the input stream
     // to create a token stream.

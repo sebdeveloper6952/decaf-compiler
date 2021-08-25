@@ -20,7 +20,7 @@ private:
     void push_table();
     SymbolTable *pop_table();
     void process_arith_expr(DecafParser::ExpressionContext *ctx);
-    void print_error(std::string msg);
+    void print_error(std::string msg, size_t line_num);
     antlr4::tree::ParseTreeProperty<int> node_types;
     std::stack<SymbolTable *> struct_tables;
 

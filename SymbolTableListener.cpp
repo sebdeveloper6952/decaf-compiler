@@ -28,7 +28,9 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
     if (!this->is_main_valid)
     {
         put_node_type(ctx, T_ERROR);
-        print_error("Source program must include a valid 'main' function declaration.");
+        print_error(
+            "Source program must include a valid 'main' function declaration.",
+            ctx->start->getLine());
     }
 }
 
@@ -99,11 +101,10 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
     if (std::stoi(array_size->getText()) < 1)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg =
-            "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        std::string msg = "";
         msg += array_size->getText();
         msg += " is an invalid integer for array size.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -112,7 +113,7 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
     if (!this->table->put(O_ARRAY, id->getText(), var_type->getText(), size))
     {
         std::string msg = "varDeclaration id (" + id->getText() + ") is already declared.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -300,9 +301,9 @@ void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
     if (e == NULL)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": id '" + ctx->ID()->getText() + "' is not declared.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -311,9 +312,9 @@ void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
     if (e->obj_type != O_ARRAY)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": id '" + ctx->ID()->getText() + "' is not an array.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -334,9 +335,9 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     if (expr_type != T_INT)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": array index must be of type 'INTEGER'";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -462,11 +463,11 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     if (entry->data_type != ret_type)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": return type: '" + DataTypes::int_to_type(ret_type);
         msg += "' not compatible with method type: '" + DataTypes::int_to_type(entry->data_type);
         msg += "'";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -492,9 +493,9 @@ void SymbolTableListener::enterMethodCall(DecafParser::MethodCallContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + ctx->start->getLine();
+        std::string msg = "";
         msg += ": method '" + ctx->ID()->getText() + "' is not declared.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -513,10 +514,10 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": expected " + std::to_string(e->m_params.size()) + " parameters, but found ";
         msg += std::to_string(a_params.size());
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -532,11 +533,11 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
         {
             put_node_type(ctx, T_ERROR);
 
-            std::string msg = "in line " + std::to_string(ctx->start->getLine());
+            std::string msg = "";
             msg += ": actual parameter type '" + DataTypes::int_to_type(a_type);
             msg += "' differs from formal parameter type '" + DataTypes::int_to_type(e->m_params[i]);
             msg += "'";
-            print_error(msg);
+            print_error(msg, ctx->start->getLine());
 
             return;
         }
@@ -583,18 +584,16 @@ void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
     if (get_node_type(ctx->children[0]) != T_INT)
     {
         size_t line = ctx->start->getLine();
-        std::string msg =
-            "in line " + std::to_string(line) + ": '" + ctx->children[0]->getText() + "' is not an integer";
-        print_error(msg);
+        std::string msg = ctx->children[0]->getText() + "' is not an integer";
+        print_error(msg, ctx->start->getLine());
         put_node_type(ctx, T_ERROR);
     }
 
     if (get_node_type(ctx->children[2]) != T_INT)
     {
         size_t line = ctx->start->getLine();
-        std::string msg =
-            "in line " + std::to_string(line) + ": '" + ctx->children[2]->getText() + "' is not an integer";
-        print_error(msg);
+        std::string msg = ctx->children[2]->getText() + "' is not an integer";
+        print_error(msg, ctx->start->getLine());
         put_node_type(ctx, T_ERROR);
     }
 
@@ -641,10 +640,10 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        std::string msg = "";
         msg += exprs[0]->getText() + " must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(left_type) + "' found.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -653,10 +652,10 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        std::string msg = "";
         msg += exprs[1]->getText() + " must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(right_type) + "' found.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -688,10 +687,10 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": ";
+        std::string msg = "";
         msg += expr->getText() + " must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(expr_type) + "' found.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -737,11 +736,11 @@ void SymbolTableListener::exitExpr_eq(DecafParser::Expr_eqContext *ctx)
     if (left_type != right_type)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "in line " + std::to_string(ctx->start->getLine()) + ": '";
+        std::string msg = "";
         msg += ctx->eq_op()->getText() + "' operator must be applied to operands of the same type.";
         msg += " Left operand has type '" + DataTypes::int_to_type(left_type);
         msg += "', right operand has type '" + DataTypes::int_to_type(right_type) + "'";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -765,9 +764,9 @@ void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callCont
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + ctx->start->getLine();
+        std::string msg = "";
         msg += ": method '" + ctx->methodCall()->ID()->getText() + "' not declared.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -776,10 +775,10 @@ void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callCont
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": method '" + ctx->methodCall()->ID()->getText() + "' has return type of 'void',";
         msg += " not allowed in an expression.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
     }
 }
 
@@ -868,10 +867,10 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": expression type: '" + DataTypes::int_to_type(expr_type);
         msg += "' is incompatible with type: '" + DataTypes::int_to_type(loc_type) + "'";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -911,10 +910,10 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": if expression must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(expr_type) + "' found.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -949,10 +948,10 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "in line " + std::to_string(ctx->start->getLine());
+        std::string msg = "";
         msg += ": if expression must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(expr_type) + "' found.";
-        print_error(msg);
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -1015,20 +1014,18 @@ void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx
 
     if (get_node_type(ctx->children[0]) != T_INT)
     {
-        size_t line = ctx->start->getLine();
-        std::string msg =
-            "in line " + std::to_string(line) + ": '" + ctx->children[0]->getText() + "' is not an integer";
-        print_error(msg);
         put_node_type(ctx, T_ERROR);
+
+        std::string msg = ctx->children[0]->getText() + "' is not an integer";
+        print_error(msg, ctx->start->getLine());
     }
 
     if (get_node_type(ctx->children[2]) != T_INT)
     {
-        size_t line = ctx->start->getLine();
-        std::string msg =
-            "in line " + std::to_string(line) + ": '" + ctx->children[2]->getText() + "' is not an integer";
-        print_error(msg);
         put_node_type(ctx, T_ERROR);
+
+        std::string msg = ctx->children[2]->getText() + "' is not an integer";
+        print_error(msg, ctx->start->getLine());
     }
 
     if (get_node_type(ctx) != T_ERROR)
@@ -1055,9 +1052,10 @@ SymbolTable *SymbolTableListener::pop_struct_table()
     return top;
 }
 
-void SymbolTableListener::print_error(std::string msg)
+void SymbolTableListener::print_error(std::string msg, size_t line_num)
 {
-    std::cout << "[ERROR]: "
+    std::cout << "[ERROR](in line "
+              << std::to_string(line_num) << ") => "
               << msg
               << std::endl;
 }
