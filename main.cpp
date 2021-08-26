@@ -19,11 +19,11 @@ int main(int argc, const char *argv[])
     // std::ifstream stream;
     // stream.open(argv[1]);
 
-    std::stringstream ss;
-    ss << argv[1];
+    std::stringstream stream;
+    stream << argv[1];
 
     // input stream
-    ANTLRInputStream input(ss);
+    ANTLRInputStream input(stream);
 
     // Create a lexer which scans the input stream
     // to create a token stream.

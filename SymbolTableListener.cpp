@@ -510,6 +510,11 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
 
     // validate method parameters
     std::vector<DecafParser::ExpressionContext *> a_params = ctx->expression();
+    for (auto p : a_params)
+    {
+        std::cout << p->getText() << std::endl;
+    }
+
     if (e->m_params.size() != a_params.size())
     {
         put_node_type(ctx, T_ERROR);

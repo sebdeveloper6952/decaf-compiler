@@ -44,8 +44,8 @@ location:
 	| ID '.' location		# loc_member;
 
 expression:
-	location									# expr_loc
-	| methodCall								# expr_method_call
+	methodCall									# expr_method_call
+	| location									# expr_loc
 	| literal									# expr_literal
 	| expression ('*' | '/' | '%') expression	# expr_arith_0
 	| expression ('+' | '-') expression			# expr_arith_1

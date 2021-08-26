@@ -15,6 +15,11 @@ class Program
         int a;
     }
 
+    int add_one(int a)
+    {
+        return a + 1;
+    }
+
     void main()
     {
         int i;
@@ -26,5 +31,7 @@ class Program
         }
 
         i = return_void();
+
+        add_one(add_one(0));
     }
 }
