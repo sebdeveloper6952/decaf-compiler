@@ -29,7 +29,7 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
         print_error(
-            "Source program must include a valid 'main' function declaration.",
+            "source program must include a valid 'main' function declaration.",
             ctx->start->getLine());
     }
 }
@@ -101,8 +101,7 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
     if (std::stoi(array_size->getText()) < 1)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "";
-        msg += array_size->getText();
+        std::string msg = array_size->getText();
         msg += " is an invalid integer for array size.";
         print_error(msg, ctx->start->getLine());
 
@@ -301,8 +300,7 @@ void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
     if (e == NULL)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "";
-        msg += ": id '" + ctx->ID()->getText() + "' is not declared.";
+        std::string msg = "id '" + ctx->ID()->getText() + "' is not declared.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -312,8 +310,7 @@ void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
     if (e->obj_type != O_ARRAY)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "";
-        msg += ": id '" + ctx->ID()->getText() + "' is not an array.";
+        std::string msg = "id '" + ctx->ID()->getText() + "' is not an array.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -335,8 +332,7 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     if (expr_type != T_INT)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "";
-        msg += ": array index must be of type 'INTEGER'";
+        std::string msg = "array index must be of type 'INTEGER'";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -442,6 +438,15 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
         }
     }
 
+    // method type is not void and no return statement, error
+    if (ec == NULL && entry->data_type != T_VOID)
+    {
+        put_node_type(ctx, T_ERROR);
+        print_error("missing return statement.", ctx->start->getLine());
+
+        return;
+    }
+
     // method type is void and no return expression found
     if (ec == NULL && entry->data_type == T_VOID)
     {
@@ -464,7 +469,7 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     {
         put_node_type(ctx, T_ERROR);
         std::string msg = "";
-        msg += ": return type: '" + DataTypes::int_to_type(ret_type);
+        msg += "return type: '" + DataTypes::int_to_type(ret_type);
         msg += "' not compatible with method type: '" + DataTypes::int_to_type(entry->data_type);
         msg += "'";
         print_error(msg, ctx->start->getLine());
@@ -493,8 +498,7 @@ void SymbolTableListener::enterMethodCall(DecafParser::MethodCallContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += ": method '" + ctx->ID()->getText() + "' is not declared.";
+        std::string msg = "method '" + ctx->ID()->getText() + "' is not declared.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -519,8 +523,7 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += ": expected " + std::to_string(e->m_params.size()) + " parameters, but found ";
+        std::string msg = "expected " + std::to_string(e->m_params.size()) + " parameters, but found ";
         msg += std::to_string(a_params.size());
         print_error(msg, ctx->start->getLine());
 
@@ -538,8 +541,7 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
         {
             put_node_type(ctx, T_ERROR);
 
-            std::string msg = "";
-            msg += ": actual parameter type '" + DataTypes::int_to_type(a_type);
+            std::string msg = "actual parameter type '" + DataTypes::int_to_type(a_type);
             msg += "' differs from formal parameter type '" + DataTypes::int_to_type(e->m_params[i]);
             msg += "'";
             print_error(msg, ctx->start->getLine());
@@ -645,8 +647,7 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += exprs[0]->getText() + " must be of type 'BOOL', '";
+        std::string msg = exprs[0]->getText() + " must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(left_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
@@ -657,8 +658,7 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += exprs[1]->getText() + " must be of type 'BOOL', '";
+        std::string msg = exprs[1]->getText() + " must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(right_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
@@ -692,8 +692,7 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += expr->getText() + " must be of type 'BOOL', '";
+        std::string msg = expr->getText() + " must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(expr_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
@@ -741,8 +740,7 @@ void SymbolTableListener::exitExpr_eq(DecafParser::Expr_eqContext *ctx)
     if (left_type != right_type)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "";
-        msg += ctx->eq_op()->getText() + "' operator must be applied to operands of the same type.";
+        std::string msg = ctx->eq_op()->getText() + "' operator must be applied to operands of the same type.";
         msg += " Left operand has type '" + DataTypes::int_to_type(left_type);
         msg += "', right operand has type '" + DataTypes::int_to_type(right_type) + "'";
         print_error(msg, ctx->start->getLine());
@@ -769,8 +767,7 @@ void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callCont
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += ": method '" + ctx->methodCall()->ID()->getText() + "' not declared.";
+        std::string msg = "method '" + ctx->methodCall()->ID()->getText() + "' not declared.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -780,8 +777,7 @@ void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callCont
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += ": method '" + ctx->methodCall()->ID()->getText() + "' has return type of 'void',";
+        std::string msg = "method '" + ctx->methodCall()->ID()->getText() + "' has return type of 'void',";
         msg += " not allowed in an expression.";
         print_error(msg, ctx->start->getLine());
     }
@@ -872,8 +868,7 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += ": expression type: '" + DataTypes::int_to_type(expr_type);
+        std::string msg = "expression type: '" + DataTypes::int_to_type(expr_type);
         msg += "' is incompatible with type: '" + DataTypes::int_to_type(loc_type) + "'";
         print_error(msg, ctx->start->getLine());
 
@@ -915,8 +910,7 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += ": if expression must be of type 'BOOL', '";
+        std::string msg = "if expression must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(expr_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
@@ -953,8 +947,7 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "";
-        msg += ": if expression must be of type 'BOOL', '";
+        std::string msg = "if expression must be of type 'BOOL', '";
         msg += DataTypes::int_to_type(expr_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
