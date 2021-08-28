@@ -87,8 +87,6 @@ public:
 
     virtual antlrcpp::Any visitMethodCall(DecafParser::MethodCallContext *context) = 0;
 
-    virtual antlrcpp::Any visitArith_op(DecafParser::Arith_opContext *context) = 0;
-
     virtual antlrcpp::Any visitRel_op(DecafParser::Rel_opContext *context) = 0;
 
     virtual antlrcpp::Any visitEq_op(DecafParser::Eq_opContext *context) = 0;

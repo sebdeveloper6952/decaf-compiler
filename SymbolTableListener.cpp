@@ -32,6 +32,23 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
             "source program must include a valid 'main' function declaration.",
             ctx->start->getLine());
     }
+
+    // check for propagated errors
+    for (antlr4::tree::ParseTree *child : ctx->children)
+    {
+        if (get_node_type(child) == T_ERROR)
+        {
+            put_node_type(ctx, T_ERROR);
+
+            std::string msg = "source program is invalid.";
+            print_error(msg, ctx->stop->getLine());
+
+            return;
+        }
+    }
+
+    // program is valid
+    put_node_type(ctx, T_VOID);
 }
 
 // Enter a new block
@@ -51,8 +68,12 @@ void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
             std::cout << "put() params: ";
             for (DecafParser::ParameterContext *p : params)
             {
+                int param_type = DataTypes::get_instance()
+                                     ->get_type_int(p->parameterType()->getText());
+
                 this->table->put(
                     O_DATA,
+                    param_type,
                     p->ID()->getText(),
                     p->parameterType()->getText());
             }
@@ -70,15 +91,16 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
 /// ---------------------------------------- Var Declarations ----------------------------------------
 void SymbolTableListener::enterVar_decl(DecafParser::Var_declContext *ctx)
 {
-    DecafParser::VarTypeContext *var_type = ctx->varType();
-    antlr4::tree::TerminalNode *id = ctx->ID();
+    std::string var_type = ctx->varType()->getText();
+    std::string id = ctx->ID()->getText();
+    int var_t = DataTypes::get_instance()->get_type_int(var_type);
 
-    if (!this->table->put(O_DATA, id->getText(), var_type->getText()))
+    if (!this->table->put(O_DATA, var_t, id, var_type))
     {
-        std::cout << "error: varDeclaration id ("
-                  << id->getText()
-                  << ") is already declared."
-                  << std::endl;
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "id '" + id + "' is already declared.";
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -94,24 +116,33 @@ void SymbolTableListener::enterVar_decl(DecafParser::Var_declContext *ctx)
  */
 void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ctx)
 {
-    DecafParser::VarTypeContext *var_type = ctx->varType();
-    antlr4::tree::TerminalNode *id = ctx->ID();
-    antlr4::tree::TerminalNode *array_size = ctx->NUM();
+    std::string var_type = ctx->varType()->getText();
+    std::string id = ctx->ID()->getText();
+    std::string array_size = ctx->NUM()->getText();
 
-    if (std::stoi(array_size->getText()) < 1)
+    if (std::stoll(array_size) < 1)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = array_size->getText();
-        msg += " is an invalid integer for array size.";
+        std::string msg = "array size must be greater than zero.";
         print_error(msg, ctx->start->getLine());
 
         return;
     }
 
-    size_t size = std::stoi(array_size->getText());
-    if (!this->table->put(O_ARRAY, id->getText(), var_type->getText(), size))
+    if (std::stoll(array_size) > T_INT_MAX)
     {
-        std::string msg = "varDeclaration id (" + id->getText() + ") is already declared.";
+        put_node_type(ctx, T_ERROR);
+        std::string msg = "array size must be less than " + T_INT_MAX;
+        print_error(msg, ctx->start->getLine());
+
+        return;
+    }
+
+    size_t size = std::stoi(array_size);
+    int var_t = DataTypes::get_instance()->get_type_int(var_type);
+    if (!this->table->put(O_ARRAY, var_t, id, var_type, size))
+    {
+        std::string msg = "varDeclaration id (" + id + ") is already declared.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -135,17 +166,27 @@ void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declConte
     if (struct_table == NULL)
     {
         put_node_type(ctx, T_ERROR);
-        std::cout << "\ttable for struct: '" << struct_type << "' not found." << std::endl;
+
+        std::string msg = "table for struct: '" + struct_type + "' not found.";
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
 
     // save new variable of type struct
-    this->table->put(
-        O_STRUCT_I,
-        struct_id,
-        struct_type,
-        0);
+    int struct_t = DataTypes::get_instance()->get_type_int(struct_type);
+    if (!this->table->put(O_STRUCT_I, struct_t, struct_id, struct_type, 0))
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "id '" + struct_id + "' is already declared";
+        print_error(msg, ctx->start->getLine());
+
+        return;
+    }
+
+    // save this node type
+    put_node_type(ctx, T_STRUCT);
 }
 
 void SymbolTableListener::exitVar_struct_decl(DecafParser::Var_struct_declContext *ctx)
@@ -167,19 +208,24 @@ void SymbolTableListener::enterStructDeclaration(DecafParser::StructDeclarationC
 
 void SymbolTableListener::exitStructDeclaration(DecafParser::StructDeclarationContext *ctx)
 {
-    std::string id = ctx->ID()->getText();
+    std::string struct_id = ctx->ID()->getText();
 
     // get this struct symbol table
     SymbolTable *table = this->pop_table();
 
+    // add the new type
+    int new_type = DataTypes::get_instance()->add_type(struct_id);
+    std::cout << "added new type with id: " << new_type << std::endl;
+
     // save the struct declaration as a new type
     this->table->put(
         O_STRUCT,
-        id,
+        new_type,
+        struct_id,
         "struct",
         0);
 
-    this->table->add_struct_table(id, table);
+    this->table->add_struct_table(struct_id, table);
 
     std::cout << "exitStructDeclaration"
               << std::endl
@@ -199,6 +245,8 @@ void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
     if (DecafParser::Loc_memberContext *d =
             dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
+        std::cout << "enterLoc_var" << std::endl;
+
         std::string struct_name = d->ID()->getText();
         SymbolTableEntry *e = this->table->get(struct_name);
         if (e == NULL)
@@ -221,22 +269,25 @@ void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
         std::string id = ctx->ID()->getText();
 
         std::cout << std::endl
-                  << "enterLocation:"
-                  << "\t" << ctx->getText() << std::endl
-                  << "\t" << id
-                  << std::endl;
+                  << "enterLoc_var ID:"
+                  << "\t" << ctx->getText() << std::endl;
 
         SymbolTableEntry *entry = this->table->get(id);
         if (entry == NULL)
         {
-            std::cout << "error: id '"
-                      << id
-                      << "' no declaration found."
-                      << std::endl;
+            put_node_type(ctx, T_ERROR);
+
+            std::string msg = "id '" + id + "' no declaration found.";
+            print_error(msg, ctx->start->getLine());
+
+            return;
         }
         else
         {
-            std::cout << id << " was found" << std::endl;
+            // TODO remove
+            std::cout << id << " was found with type '"
+                      << entry->type << "'" << std::endl;
+            put_node_type(ctx, entry->data_type);
         }
     }
 }
@@ -276,6 +327,8 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
     }
     else
     {
+        std::cout << "exitLoc_var: " << ctx->getText() << std::endl;
+
         SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
         if (e == NULL)
         {
@@ -283,11 +336,15 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
 
             return;
         }
+        std::cout
+            << "\t" << e->id << " | " << e->data_type
+            << " | " << e->obj_type << " | " << e->type
+            << std::endl;
 
         put_node_type(ctx, e->data_type);
 
-        std::cout << "exitLoc_var: type: "
-                  << DataTypes::int_to_type(get_node_type(ctx))
+        std::cout << "\ttype: "
+                  << DataTypes::get_instance()->get_type(get_node_type(ctx))
                   << std::endl;
     }
 }
@@ -405,7 +462,8 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
                               ctx->parameter().size() == 0;
     }
 
-    if (this->table->put(O_METHOD, id, method_type))
+    int method_t = DataTypes::get_instance()->get_type_int(method_type);
+    if (this->table->put(O_METHOD, method_t, id, method_type))
     {
         // get method params
         std::vector<DecafParser::ParameterContext *> params = ctx->parameter();
@@ -469,8 +527,8 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     {
         put_node_type(ctx, T_ERROR);
         std::string msg = "";
-        msg += "return type: '" + DataTypes::int_to_type(ret_type);
-        msg += "' not compatible with method type: '" + DataTypes::int_to_type(entry->data_type);
+        msg += "return type: '" + DataTypes::get_instance()->get_type(ret_type);
+        msg += "' not compatible with method type: '" + DataTypes::get_instance()->get_type(entry->data_type);
         msg += "'";
         print_error(msg, ctx->start->getLine());
 
@@ -479,8 +537,8 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
 
     // all previous checks passed, method type and return type are correct
     put_node_type(ctx, ret_type);
-    std::cout << "\tMethod type: '" + DataTypes::int_to_type(entry->data_type)
-              << "' is compatible with return type '" << DataTypes::int_to_type(ret_type)
+    std::cout << "\tMethod type: '" + DataTypes::get_instance()->get_type(entry->data_type)
+              << "' is compatible with return type '" << DataTypes::get_instance()->get_type(ret_type)
               << "'" << std::endl;
 }
 /// -----------------------------------------------------------------------------------------------------
@@ -541,8 +599,8 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
         {
             put_node_type(ctx, T_ERROR);
 
-            std::string msg = "actual parameter type '" + DataTypes::int_to_type(a_type);
-            msg += "' differs from formal parameter type '" + DataTypes::int_to_type(e->m_params[i]);
+            std::string msg = "actual parameter type '" + DataTypes::get_instance()->get_type(a_type);
+            msg += "' differs from formal parameter type '" + DataTypes::get_instance()->get_type(e->m_params[i]);
             msg += "'";
             print_error(msg, ctx->start->getLine());
 
@@ -648,7 +706,7 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
         put_node_type(ctx, T_ERROR);
 
         std::string msg = exprs[0]->getText() + " must be of type 'BOOL', '";
-        msg += DataTypes::int_to_type(left_type) + "' found.";
+        msg += DataTypes::get_instance()->get_type(left_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -659,7 +717,7 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
         put_node_type(ctx, T_ERROR);
 
         std::string msg = exprs[1]->getText() + " must be of type 'BOOL', '";
-        msg += DataTypes::int_to_type(right_type) + "' found.";
+        msg += DataTypes::get_instance()->get_type(right_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -669,7 +727,7 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
     std::cout << "exitExpr_cond: "
               << ctx->getText()
               << " has type: '"
-              << DataTypes::int_to_type(get_node_type(ctx))
+              << DataTypes::get_instance()->get_type(get_node_type(ctx))
               << "'" << std::endl;
 }
 
@@ -693,7 +751,7 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
         put_node_type(ctx, T_ERROR);
 
         std::string msg = expr->getText() + " must be of type 'BOOL', '";
-        msg += DataTypes::int_to_type(expr_type) + "' found.";
+        msg += DataTypes::get_instance()->get_type(expr_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -704,7 +762,7 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
     std::cout << "exitExpr_not: "
               << ctx->getText()
               << " has type '"
-              << DataTypes::int_to_type(get_node_type(ctx))
+              << DataTypes::get_instance()->get_type(get_node_type(ctx))
               << "'"
               << std::endl;
 }
@@ -741,8 +799,8 @@ void SymbolTableListener::exitExpr_eq(DecafParser::Expr_eqContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
         std::string msg = ctx->eq_op()->getText() + "' operator must be applied to operands of the same type.";
-        msg += " Left operand has type '" + DataTypes::int_to_type(left_type);
-        msg += "', right operand has type '" + DataTypes::int_to_type(right_type) + "'";
+        msg += " Left operand has type '" + DataTypes::get_instance()->get_type(left_type);
+        msg += "', right operand has type '" + DataTypes::get_instance()->get_type(right_type) + "'";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -753,7 +811,7 @@ void SymbolTableListener::exitExpr_eq(DecafParser::Expr_eqContext *ctx)
         << "exitExpr_eq: "
         << ctx->getText()
         << " has type '"
-        << DataTypes::int_to_type(get_node_type(ctx))
+        << DataTypes::get_instance()->get_type(get_node_type(ctx))
         << "'"
         << std::endl;
 }
@@ -781,6 +839,55 @@ void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callCont
         msg += " not allowed in an expression.";
         print_error(msg, ctx->start->getLine());
     }
+}
+
+/**
+ * Has the form '-' expression
+ * 
+ * Must validate that expression is of type integer.
+ */
+void SymbolTableListener::exitExpr_neg(DecafParser::Expr_negContext *ctx)
+{
+    std::cout << std::endl
+              << "exitExpr_neg" << std::endl;
+
+    // get type of expression
+    DecafParser::ExpressionContext *expr = ctx->expression();
+    int expr_type = get_node_type(expr);
+    if (expr->children.size() == 1)
+        expr_type = get_node_type(expr->children[0]);
+
+    std::cout << "expr_type: " << std::to_string(expr_type) << std::endl;
+    if (expr_type != T_INT)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = expr->getText() + " is not of type integer.";
+        print_error(msg, ctx->start->getLine());
+
+        return;
+    }
+
+    // save this node type
+    put_node_type(ctx, T_INT);
+}
+
+/**
+ * Has the form '(' expression ')'
+ * 
+ * Must set the type of this node to the type of the inner expression.
+ */
+void SymbolTableListener::exitExpr_par(DecafParser::Expr_parContext *ctx)
+{
+    std::cout << std::endl
+              << "exitExpr_par" << std::endl;
+
+    // get type of expression
+    DecafParser::ExpressionContext *expr = ctx->expression();
+    int expr_type = get_node_type(expr);
+    if (expr->children.size() == 1)
+        expr_type = get_node_type(expr->children[0]);
+    put_node_type(ctx, expr_type);
 }
 
 /// ----------------------------------------------------------------------------------------------------
@@ -868,8 +975,9 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = "expression type: '" + DataTypes::int_to_type(expr_type);
-        msg += "' is incompatible with type: '" + DataTypes::int_to_type(loc_type) + "'";
+        std::string msg = "expression: '" + expr->getText();
+        msg += "' of type '" + DataTypes::get_instance()->get_type(expr_type) + "'";
+        msg += " is incompatible with type: '" + DataTypes::get_instance()->get_type(loc_type) + "'";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -878,9 +986,9 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     std::cout << std::endl
               << "exitSt_assignment: "
               << ctx->getText()
-              << " " << DataTypes::int_to_type(loc_type)
+              << " " << DataTypes::get_instance()->get_type(loc_type)
               << " = "
-              << DataTypes::int_to_type(expr_type)
+              << DataTypes::get_instance()->get_type(expr_type)
               << std::endl;
 }
 
@@ -911,7 +1019,7 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
         put_node_type(ctx, T_ERROR);
 
         std::string msg = "if expression must be of type 'BOOL', '";
-        msg += DataTypes::int_to_type(expr_type) + "' found.";
+        msg += DataTypes::get_instance()->get_type(expr_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -921,7 +1029,7 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     put_node_type(ctx, T_VOID);
 
     std::cout << "exitSt_if: has type: '"
-              << DataTypes::int_to_type(get_node_type(ctx))
+              << DataTypes::get_instance()->get_type(get_node_type(ctx))
               << "'"
               << std::endl;
 }
@@ -948,7 +1056,7 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
         put_node_type(ctx, T_ERROR);
 
         std::string msg = "if expression must be of type 'BOOL', '";
-        msg += DataTypes::int_to_type(expr_type) + "' found.";
+        msg += DataTypes::get_instance()->get_type(expr_type) + "' found.";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -958,7 +1066,7 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     put_node_type(ctx, T_VOID);
 
     std::cout << "exitSt_while: has type: '"
-              << DataTypes::int_to_type(get_node_type(ctx))
+              << DataTypes::get_instance()->get_type(get_node_type(ctx))
               << "'"
               << std::endl;
 }

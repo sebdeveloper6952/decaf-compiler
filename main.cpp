@@ -9,6 +9,7 @@
 #include "CustomListener.h"
 #include "SymbolTable.h"
 #include "SymbolTableListener.h"
+#include "DataTypes.h"
 
 using namespace antlr4;
 
@@ -16,11 +17,11 @@ int main(int argc, const char *argv[])
 {
     // TODO: validate argv length
     // open file specified.
-    // std::ifstream stream;
-    // stream.open(argv[1]);
+    std::ifstream stream;
+    stream.open(argv[1]);
 
-    std::stringstream stream;
-    stream << argv[1];
+    // std::stringstream stream;
+    // stream << argv[1];
 
     // input stream
     ANTLRInputStream input(stream);
@@ -60,7 +61,7 @@ int main(int argc, const char *argv[])
     // visitor.visitProgram(ctx);
 
     // TODO: remove
-    table->print_table();
+    // table->print_table();
 
     return 0;
 }

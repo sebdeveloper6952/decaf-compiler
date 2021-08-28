@@ -20,6 +20,7 @@ std::string const &SymbolTable::get_name()
 
 bool SymbolTable::put(
     int obj_type,
+    int data_type,
     std::string const &id,
     std::string const &type,
     size_t size)
@@ -28,7 +29,13 @@ bool SymbolTable::put(
     if (this->table.count(id))
         return false;
 
-    int data_type = DataTypes::type_to_int(type);
+    // int data_type = DataTypes::type_to_int(type);
+    // if (obj_type == O_STRUCT_I)
+    // {
+    //     data_type = T_STRUCT;
+    // }
+
+    // save entry in table
     SymbolTableEntry *entry = new SymbolTableEntry(
         id,
         obj_type,
@@ -82,7 +89,8 @@ bool SymbolTable::add_method_param(std::string id, std::string type)
     if (this->table.count(id) == 0)
         return false;
 
-    int p_type = DataTypes::type_to_int(type);
+    // int p_type = DataTypes::type_to_int(type);
+    int p_type = DataTypes::get_instance()->get_type_int(type);
     this->table[id]->m_params.push_back(p_type);
 
     std::cout

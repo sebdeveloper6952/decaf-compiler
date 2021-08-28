@@ -25,9 +25,9 @@ public:
     RuleProgram = 0, RuleDeclaration = 1, RuleVarDeclaration = 2, RuleStructDeclaration = 3, 
     RuleVarType = 4, RuleMethodType = 5, RuleMethodDeclaration = 6, RuleParameter = 7, 
     RuleParameterType = 8, RuleBlock = 9, RuleStatement = 10, RuleLocation = 11, 
-    RuleExpression = 12, RuleMethodCall = 13, RuleArith_op = 14, RuleRel_op = 15, 
-    RuleEq_op = 16, RuleCond_op = 17, RuleLiteral = 18, RuleInt_literal = 19, 
-    RuleChar_literal = 20, RuleBool_literal = 21
+    RuleExpression = 12, RuleMethodCall = 13, RuleRel_op = 14, RuleEq_op = 15, 
+    RuleCond_op = 16, RuleLiteral = 17, RuleInt_literal = 18, RuleChar_literal = 19, 
+    RuleBool_literal = 20
   };
 
   DecafParser(antlr4::TokenStream *input);
@@ -54,7 +54,6 @@ public:
   class LocationContext;
   class ExpressionContext;
   class MethodCallContext;
-  class Arith_opContext;
   class Rel_opContext;
   class Eq_opContext;
   class Cond_opContext;
@@ -395,6 +394,7 @@ public:
 
     antlr4::tree::TerminalNode *ID();
     LocationContext *location();
+    ExpressionContext *expression();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
@@ -575,20 +575,6 @@ public:
   };
 
   MethodCallContext* methodCall();
-
-  class  Arith_opContext : public antlr4::ParserRuleContext {
-  public:
-    Arith_opContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  Arith_opContext* arith_op();
 
   class  Rel_opContext : public antlr4::ParserRuleContext {
   public:

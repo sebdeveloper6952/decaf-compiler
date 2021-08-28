@@ -83,6 +83,8 @@ public:
     void enterExpr_eq(DecafParser::Expr_eqContext *ctx);
     void exitExpr_eq(DecafParser::Expr_eqContext *ctx);
     void exitExpr_method_call(DecafParser::Expr_method_callContext *ctx);
+    void exitExpr_neg(DecafParser::Expr_negContext *ctx);
+    void exitExpr_par(DecafParser::Expr_parContext *ctx);
 
     // literals
     void enterLiteral(DecafParser::LiteralContext *ctx);

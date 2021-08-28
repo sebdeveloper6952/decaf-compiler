@@ -151,10 +151,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitArith_op(DecafParser::Arith_opContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitRel_op(DecafParser::Rel_opContext *ctx) override {
     return visitChildren(ctx);
   }

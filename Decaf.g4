@@ -39,9 +39,9 @@ statement:
 	| expression? ';'								# st_expression;
 
 location:
-	ID						# loc_var
-	| ID '[' expression ']'	# loc_array
-	| ID '.' location		# loc_member;
+	ID										# loc_var
+	| ID '[' expression ']'					# loc_array
+	| ID ('[' expression ']')? '.' location	# loc_member;
 
 expression:
 	methodCall									# expr_method_call
@@ -56,9 +56,7 @@ expression:
 	| '!' expression							# expr_not
 	| '(' expression ')'						# expr_par;
 
-methodCall: ID '(' (expression (',' expression)?)* ')';
-
-arith_op: '*' | '/' | '%' | '+' | '-';
+methodCall: ID '(' (expression (',' expression)*)? ')';
 
 rel_op: '<' | '>' | '<=' | '>=';
 

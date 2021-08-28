@@ -116,9 +116,6 @@ public:
   virtual void enterMethodCall(DecafParser::MethodCallContext *ctx) = 0;
   virtual void exitMethodCall(DecafParser::MethodCallContext *ctx) = 0;
 
-  virtual void enterArith_op(DecafParser::Arith_opContext *ctx) = 0;
-  virtual void exitArith_op(DecafParser::Arith_opContext *ctx) = 0;
-
   virtual void enterRel_op(DecafParser::Rel_opContext *ctx) = 0;
   virtual void exitRel_op(DecafParser::Rel_opContext *ctx) = 0;
 

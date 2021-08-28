@@ -22,7 +22,8 @@ public:
     SymbolTable *get_parent();
     std::string const &get_name();
     bool put(
-        int s_type,
+        int obj_type,
+        int data_type,
         std::string const &id,
         std::string const &type,
         size_t size = 0);
