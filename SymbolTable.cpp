@@ -29,12 +29,6 @@ bool SymbolTable::put(
     if (this->table.count(id))
         return false;
 
-    // int data_type = DataTypes::type_to_int(type);
-    // if (obj_type == O_STRUCT_I)
-    // {
-    //     data_type = T_STRUCT;
-    // }
-
     // save entry in table
     SymbolTableEntry *entry = new SymbolTableEntry(
         id,

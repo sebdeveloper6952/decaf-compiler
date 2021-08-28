@@ -14,11 +14,6 @@ DataTypes *DataTypes::get_instance()
 
 DataTypes::DataTypes()
 {
-    // this->types[1] = "int";
-    // this->types[2] = "bool";
-    // this->types[3] = "char";
-    // this->types[4] = "error";
-    // this->types[5] = "void";
     add_type("int");
     add_type("bool");
     add_type("char");
@@ -40,7 +35,7 @@ std::string DataTypes::get_type(int type)
     if (types.count(type) > 0)
         return types[type];
 
-    return NULL;
+    return "error";
 }
 
 int DataTypes::get_type_int(std::string type)
@@ -48,39 +43,8 @@ int DataTypes::get_type_int(std::string type)
     if (r_types.count(type) > 0)
         return r_types[type];
 
-    return NULL;
+    return -1;
 }
-
-// std::string DataTypes::int_to_type(int type)
-// {
-//     std::string t = "error";
-//     if (type == T_INT)
-//         t = "int";
-//     if (type == T_BOOL)
-//         t = "bool";
-//     if (type == T_CHAR)
-//         t = "char";
-//     if (type == T_VOID)
-//         t = "void";
-//     if (type == T_STRUCT)
-//         t = "struct";
-//     return t;
-// }
-
-// int DataTypes::type_to_int(std::string type)
-// {
-//     if (type == "int")
-//         return T_INT;
-//     if (type == "bool")
-//         return T_BOOL;
-//     if (type == "char")
-//         return T_CHAR;
-//     if (type == "void")
-//         return T_VOID;
-//     if (type == "struct")
-//         return T_STRUCT;
-//     return T_ERROR;
-// }
 
 std::string DataTypes::int_to_obj_type(int type)
 {

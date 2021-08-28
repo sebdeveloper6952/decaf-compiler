@@ -1,5 +1,7 @@
 class Program
 {
+	int a;
+
 	struct A
 	{
 		int a;
@@ -10,11 +12,17 @@ class Program
 		struct A a;
 	};
 
+	struct C
+	{
+		struct B b;
+	};
+
 	void main()
 	{
 		struct A a;
 		struct B b;
+		struct C c;
 
-		b.a = a;
+		c.b.a.a = 0;
 	}
 }

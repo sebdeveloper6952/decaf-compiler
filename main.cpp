@@ -44,10 +44,6 @@ int main(int argc, const char *argv[])
     // Create parse tree from the top production of our grammar
     tree::ParseTree *tree = parser.program();
 
-    // Listener Pattern
-    // CustomListener custom_listener;
-    // tree::ParseTreeWalker::DEFAULT.walk(&custom_listener, tree);
-
     // SymbolTable declaration
     SymbolTable *table = new SymbolTable(NULL, "global");
 
@@ -55,13 +51,8 @@ int main(int argc, const char *argv[])
     SymbolTableListener st_listener(table);
     tree::ParseTreeWalker::DEFAULT.walk(&st_listener, tree);
 
-    // visitor pattern
-    // DecafParser::ProgramContext *ctx = parser.program();
-    // DecafBaseVisitor visitor;
-    // visitor.visitProgram(ctx);
-
     // TODO: remove
-    // table->print_table();
+    table->print_table();
 
     return 0;
 }

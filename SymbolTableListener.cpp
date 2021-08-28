@@ -95,6 +95,10 @@ void SymbolTableListener::enterVar_decl(DecafParser::Var_declContext *ctx)
     std::string id = ctx->ID()->getText();
     int var_t = DataTypes::get_instance()->get_type_int(var_type);
 
+    std::cout << std::endl
+              << "enterVar_decl: "
+              << var_type << " " << id << std::endl;
+
     if (!this->table->put(O_DATA, var_t, id, var_type))
     {
         put_node_type(ctx, T_ERROR);
@@ -251,12 +255,14 @@ void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
         SymbolTableEntry *e = this->table->get(struct_name);
         if (e == NULL)
         {
+            put_node_type(ctx, T_ERROR);
             return;
         }
 
         SymbolTable *struct_table = this->table->get_struct_table(e->type);
         if (struct_table == NULL)
         {
+            put_node_type(ctx, T_ERROR);
             return;
         }
 
@@ -302,6 +308,7 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
     {
         SymbolTable *top = this->struct_tables.top();
 
+        std::cout << "exitLoc_var: " << ctx->getText() << std::endl;
         std::cout << "\tsearching '"
                   << ctx->ID()->getText()
                   << "' in struct symbol table '"
@@ -312,6 +319,8 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
         if (e == NULL)
         {
             put_node_type(ctx, T_ERROR);
+
+            std::cout << "\t no symbol table entry found." << ctx->getText() << std::endl;
 
             return;
         }
@@ -417,6 +426,9 @@ void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
     {
         put_node_type(ctx, T_ERROR);
 
+        std::string msg = "id '" + var_name + "' is not declared.";
+        print_error(msg, ctx->start->getLine());
+
         return;
     }
 
@@ -429,6 +441,9 @@ void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
         return;
     }
 
+    // save node type
+    // put_node_type(ctx, );
+
     std::cout << "\tfound table for struct '"
               << e->id << "'"
               << std::endl;
@@ -438,7 +453,14 @@ void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
 
 void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
 {
-    std::cout << "exitLoc_member" << std::endl;
+    int loc_type = get_node_type(ctx->location());
+
+    std::cout << "exitLoc_member:\n\t"
+              << ctx->getText() << " | "
+              << DataTypes::get_instance()->get_type(loc_type)
+              << std::endl;
+
+    put_node_type(ctx, loc_type);
 
     this->pop_struct_table();
 }
@@ -962,6 +984,9 @@ void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx
 /// ---------------------------------------- Statements ----------------------------------------
 void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *ctx)
 {
+    std::cout << std::endl
+              << "exitSt_assignment:\n\t" << ctx->getText() << std::endl;
+
     DecafParser::LocationContext *loc = ctx->location();
     DecafParser::ExpressionContext *expr = ctx->expression();
 
@@ -982,6 +1007,8 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
 
         return;
     }
+
+    put_node_type(ctx, T_VOID);
 
     std::cout << std::endl
               << "exitSt_assignment: "
