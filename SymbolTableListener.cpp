@@ -178,16 +178,35 @@ void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declConte
         return;
     }
 
-    // save new variable of type struct
-    int struct_t = DataTypes::get_instance()->get_type_int(struct_type);
-    if (!this->table->put(O_STRUCT_I, struct_t, struct_id, struct_type, 0))
+    // array of structs
+    if (ctx->NUM() != NULL)
     {
-        put_node_type(ctx, T_ERROR);
+        // save new variable of type struct
+        int struct_t = DataTypes::get_instance()->get_type_int(struct_type);
+        if (!this->table->put(O_ARRAY, struct_t, struct_id, struct_type, 0))
+        {
+            put_node_type(ctx, T_ERROR);
 
-        std::string msg = "id '" + struct_id + "' is already declared";
-        print_error(msg, ctx->start->getLine());
+            std::string msg = "id '" + struct_id + "' is already declared";
+            print_error(msg, ctx->start->getLine());
 
-        return;
+            return;
+        }
+    }
+    // struct instance declaration
+    else
+    {
+        // save new variable of type struct
+        int struct_t = DataTypes::get_instance()->get_type_int(struct_type);
+        if (!this->table->put(O_STRUCT_I, struct_t, struct_id, struct_type, 0))
+        {
+            put_node_type(ctx, T_ERROR);
+
+            std::string msg = "id '" + struct_id + "' is already declared";
+            print_error(msg, ctx->start->getLine());
+
+            return;
+        }
     }
 
     // save this node type
@@ -361,10 +380,23 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
 
 void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
 {
-    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+    std::cout << "enterLoc_array" << std::endl;
+    SymbolTableEntry *entry = NULL;
+
+    if (DecafParser::Loc_memberContext *d = dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
+    {
+        SymbolTable *top = this->struct_tables.top();
+        entry = top->get(ctx->ID()->getText());
+    }
+    else
+    {
+        entry = this->table->get(ctx->ID()->getText());
+    }
+
+    // SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
 
     // validate ID exists
-    if (e == NULL)
+    if (entry == NULL)
     {
         put_node_type(ctx, T_ERROR);
         std::string msg = "id '" + ctx->ID()->getText() + "' is not declared.";
@@ -374,7 +406,7 @@ void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
     }
 
     // validate ID refers to an array object
-    if (e->obj_type != O_ARRAY)
+    if (entry->obj_type != O_ARRAY)
     {
         put_node_type(ctx, T_ERROR);
         std::string msg = "id '" + ctx->ID()->getText() + "' is not an array.";
@@ -406,8 +438,18 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     }
 
     // set this node type as the type of the array
-    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
-    put_node_type(ctx, e->data_type);
+    SymbolTableEntry *entry = NULL;
+    if (DecafParser::Loc_memberContext *d = dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
+    {
+        SymbolTable *top = this->struct_tables.top();
+        entry = top->get(ctx->ID()->getText());
+    }
+    else
+    {
+        entry = this->table->get(ctx->ID()->getText());
+    }
+    // SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+    put_node_type(ctx, entry->data_type);
 }
 
 void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
@@ -421,20 +463,37 @@ void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
               << var_name
               << std::endl;
 
-    // validate var_name exists
-    SymbolTableEntry *e = this->table->get(var_name);
-    if (e == NULL)
+    // entry for this var name
+    SymbolTableEntry *entry = NULL;
+
+    // if parent is a struct
+    if (DecafParser::Loc_memberContext *d = dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
-        put_node_type(ctx, T_ERROR);
+        std::cout << "\tsearch in parent symbol table" << std::endl;
+        SymbolTable *top = this->struct_tables.top();
+        entry = top->get(var_name);
+        if (entry != NULL)
+        {
+            std::cout << "\tfound " << var_name << " !" << std::endl;
+        }
+    }
+    else
+    {
+        // validate var_name exists
+        entry = this->table->get(var_name);
+        if (entry == NULL)
+        {
+            put_node_type(ctx, T_ERROR);
 
-        std::string msg = "id '" + var_name + "' is not declared.";
-        print_error(msg, ctx->start->getLine());
+            std::string msg = "id '" + var_name + "' is not declared.";
+            print_error(msg, ctx->start->getLine());
 
-        return;
+            return;
+        }
     }
 
     // var_name is a struct, get its struct symbol table
-    SymbolTable *struct_table = this->table->get_struct_table(e->type);
+    SymbolTable *struct_table = this->table->get_struct_table(entry->type);
     if (struct_table == NULL)
     {
         put_node_type(ctx, T_ERROR);
@@ -442,11 +501,8 @@ void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
         return;
     }
 
-    // save node type
-    // put_node_type(ctx, );
-
     std::cout << "\tfound table for struct '"
-              << e->id << "'"
+              << entry->id << "'"
               << std::endl;
 
     this->push_struct_table(struct_table);

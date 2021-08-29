@@ -11,9 +11,9 @@ declaration:
 	| methodDeclaration;
 
 varDeclaration:
-	varType ID ';'					# var_decl
-	| varType ID '[' NUM ']' ';'	# var_arr_decl
-	| 'struct' ID ID ';'			# var_struct_decl;
+	varType ID ';'						# var_decl
+	| varType ID '[' NUM ']' ';'		# var_arr_decl
+	| 'struct' ID ID ('[' NUM ']')? ';'	# var_struct_decl;
 
 structDeclaration: 'struct' ID '{' (varDeclaration)* '}' ';';
 
@@ -39,9 +39,9 @@ statement:
 	| expression? ';'								# st_expression;
 
 location:
-	ID										# loc_var
+	ID ('[' expression ']')? '.' location	# loc_member
 	| ID '[' expression ']'					# loc_array
-	| ID ('[' expression ']')? '.' location	# loc_member;
+	| ID									# loc_var;
 
 expression:
 	methodCall									# expr_method_call

@@ -19,11 +19,9 @@ class Program
 
 	void main()
 	{
-		struct A a;
-		struct B b;
 		struct C c;
 		int i;
 
-		i = c.b.a.a;
+		c.b.a.a = 1;
 	}
 }

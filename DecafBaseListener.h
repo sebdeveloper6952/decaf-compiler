@@ -73,14 +73,14 @@ public:
   virtual void enterSt_expression(DecafParser::St_expressionContext * /*ctx*/) override { }
   virtual void exitSt_expression(DecafParser::St_expressionContext * /*ctx*/) override { }
 
-  virtual void enterLoc_var(DecafParser::Loc_varContext * /*ctx*/) override { }
-  virtual void exitLoc_var(DecafParser::Loc_varContext * /*ctx*/) override { }
+  virtual void enterLoc_member(DecafParser::Loc_memberContext * /*ctx*/) override { }
+  virtual void exitLoc_member(DecafParser::Loc_memberContext * /*ctx*/) override { }
 
   virtual void enterLoc_array(DecafParser::Loc_arrayContext * /*ctx*/) override { }
   virtual void exitLoc_array(DecafParser::Loc_arrayContext * /*ctx*/) override { }
 
-  virtual void enterLoc_member(DecafParser::Loc_memberContext * /*ctx*/) override { }
-  virtual void exitLoc_member(DecafParser::Loc_memberContext * /*ctx*/) override { }
+  virtual void enterLoc_var(DecafParser::Loc_varContext * /*ctx*/) override { }
+  virtual void exitLoc_var(DecafParser::Loc_varContext * /*ctx*/) override { }
 
   virtual void enterExpr_literal(DecafParser::Expr_literalContext * /*ctx*/) override { }
   virtual void exitExpr_literal(DecafParser::Expr_literalContext * /*ctx*/) override { }

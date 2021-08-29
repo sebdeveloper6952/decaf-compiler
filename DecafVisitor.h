@@ -57,11 +57,11 @@ public:
 
     virtual antlrcpp::Any visitSt_expression(DecafParser::St_expressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitLoc_var(DecafParser::Loc_varContext *context) = 0;
+    virtual antlrcpp::Any visitLoc_member(DecafParser::Loc_memberContext *context) = 0;
 
     virtual antlrcpp::Any visitLoc_array(DecafParser::Loc_arrayContext *context) = 0;
 
-    virtual antlrcpp::Any visitLoc_member(DecafParser::Loc_memberContext *context) = 0;
+    virtual antlrcpp::Any visitLoc_var(DecafParser::Loc_varContext *context) = 0;
 
     virtual antlrcpp::Any visitExpr_literal(DecafParser::Expr_literalContext *context) = 0;
 
