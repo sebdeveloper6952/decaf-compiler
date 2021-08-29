@@ -51,6 +51,7 @@ public:
     void exitSt_if(DecafParser::St_ifContext *ctx);
     void enterSt_while(DecafParser::St_whileContext *ctx);
     void exitSt_while(DecafParser::St_whileContext *ctx);
+    void exitSt_return(DecafParser::St_returnContext *ctx);
 
     // location
     void exitLoc_var(DecafParser::Loc_varContext *ctx);
@@ -62,7 +63,6 @@ public:
 
     // method declaration
     void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
-    void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
 
     // method calls
     void enterMethodCall(DecafParser::MethodCallContext *ctx);

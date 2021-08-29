@@ -85,6 +85,7 @@ void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
 // exit the current block
 void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
 {
+    // pop the symbol table for this block
     this->pop_table();
 }
 
@@ -496,73 +497,6 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
     }
 }
 
-void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx)
-{
-    std::cout << "exitMethodDeclaration" << std::endl;
-    // get symbol table entry for this method
-    SymbolTableEntry *entry = this->table->get(ctx->ID()->getText());
-
-    // get the method block statements
-    std::vector<DecafParser::StatementContext *> block = ctx->block()->statement();
-
-    // get the return statement
-    DecafParser::St_returnContext *ec = NULL;
-    for (DecafParser::StatementContext *c : block)
-    {
-        if (DecafParser::St_returnContext *d = dynamic_cast<DecafParser::St_returnContext *>(c))
-        {
-            ec = (DecafParser::St_returnContext *)c;
-            std::cout << "\treturn statement found: " << ec->getText() << std::endl;
-
-            break;
-        }
-    }
-
-    // method type is not void and no return statement, error
-    if (ec == NULL && entry->data_type != T_VOID)
-    {
-        put_node_type(ctx, T_ERROR);
-        print_error("missing return statement.", ctx->start->getLine());
-
-        return;
-    }
-
-    // method type is void and no return expression found
-    if (ec == NULL && entry->data_type == T_VOID)
-    {
-        put_node_type(ctx, T_VOID);
-        std::cout << "\tNo return statement found and method type is 'VOID'." << std::endl;
-
-        return;
-    }
-
-    DecafParser::ExpressionContext *ret_expr = ec->expression();
-    int ret_type = T_VOID;
-    // return has an expression
-    if (ret_expr != NULL)
-    {
-        ret_type = get_node_type(ret_expr->children[0]);
-        std::cout << "\treturn expression: " << ret_expr->getText() << std::endl;
-    }
-
-    if (entry->data_type != ret_type)
-    {
-        put_node_type(ctx, T_ERROR);
-        std::string msg = "";
-        msg += "return type: '" + DataTypes::get_instance()->get_type(ret_type);
-        msg += "' not compatible with method type: '" + DataTypes::get_instance()->get_type(entry->data_type);
-        msg += "'";
-        print_error(msg, ctx->start->getLine());
-
-        return;
-    }
-
-    // all previous checks passed, method type and return type are correct
-    put_node_type(ctx, ret_type);
-    std::cout << "\tMethod type: '" + DataTypes::get_instance()->get_type(entry->data_type)
-              << "' is compatible with return type '" << DataTypes::get_instance()->get_type(ret_type)
-              << "'" << std::endl;
-}
 /// -----------------------------------------------------------------------------------------------------
 
 /// ---------------------------------------- Method Calls ----------------------------------------
@@ -1095,6 +1029,86 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     std::cout << "exitSt_while: has type: '"
               << DataTypes::get_instance()->get_type(get_node_type(ctx))
               << "'"
+              << std::endl;
+}
+
+void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
+{
+
+    int return_type = 0;
+
+    // no expression for return, implicit VOID
+    if (ctx->expression() == NULL)
+        return_type = T_VOID;
+    else
+    {
+        return_type = get_node_type(ctx->expression());
+        if (ctx->expression()->children.size() == 1)
+            return_type = get_node_type(ctx->expression()->children[0]);
+    }
+
+    // try to get method
+    std::string method_name = "";
+    antlr4::tree::ParseTree *node = ctx->parent;
+    while (node != NULL)
+    {
+        if (DecafParser::MethodDeclarationContext *d = dynamic_cast<DecafParser::MethodDeclarationContext *>(node))
+            method_name = d->ID()->getText();
+
+        node = node->parent;
+    }
+
+    // method was not found
+    if (method_name == "")
+    {
+        put_node_type(ctx, T_ERROR);
+        return;
+    }
+
+    // get symbol table entry for method
+    SymbolTableEntry *entry = this->table->get(method_name);
+    if (entry == NULL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        return;
+    }
+
+    // main method must be void
+    if (entry->id == "main" && return_type != T_VOID)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "expression return type '";
+        msg += DataTypes::get_instance()->get_type(return_type);
+        msg += "' is not valid for the 'main' method.";
+        print_error(msg, ctx->start->getLine());
+
+        return;
+    }
+
+    // compare expression return type with method return type
+    if (entry->data_type != return_type)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "return expression";
+        if (ctx->expression() != NULL)
+            msg += " '" + ctx->expression()->getText() + "'";
+        msg += "with type '" + DataTypes::get_instance()->get_type(return_type) + "' ";
+        msg += "differs from method return type '" + DataTypes::get_instance()->get_type(entry->data_type);
+        msg += "'.";
+        print_error(msg, ctx->start->getLine());
+
+        return;
+    }
+
+    put_node_type(ctx, return_type);
+
+    std::cout << std::endl
+              << "exitSt_return type: "
+              << DataTypes::get_instance()->get_type(return_type)
+              << " | inside method: " << method_name
               << std::endl;
 }
 

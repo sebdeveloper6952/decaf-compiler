@@ -22,7 +22,8 @@ class Program
 		struct A a;
 		struct B b;
 		struct C c;
+		int i;
 
-		c.b.a.a = 0;
+		i = c.b.a.a;
 	}
 }

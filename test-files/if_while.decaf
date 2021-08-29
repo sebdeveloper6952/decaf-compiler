@@ -1,33 +1,17 @@
 class Program
 {
+    int fib(int a)
+    {
+        if (a < 2)
+        {
+            return 1;
+        }
+
+        return fib(a - 1) + fib(a - 2);
+    }
+
     void main()
     {
-        int i;
-        i = 0;
-
-        if (true)
-        {
-            int i;
-        }
-
-        if (1<2)
-        {
-            int i;
-        }
-
-        if (0)
-        {
-            int i;
-        }
-        
-        while (i < 5)
-        {
-            i = i + 1;
-        }
-
-        while ('a')
-        {
-            false;
-        }
+        1 + fib(5);
     }
 }
