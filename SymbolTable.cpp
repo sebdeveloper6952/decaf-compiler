@@ -25,7 +25,7 @@ bool SymbolTable::put(
     std::string const &type,
     size_t size)
 {
-    std::cout << "[ST '" << this->name << "']: put(): " << id << std::endl;
+    // std::cout << "[ST '" << this->name << "']: put(): " << id << std::endl;
     if (this->table.count(id))
         return false;
 
@@ -61,7 +61,7 @@ SymbolTableEntry *SymbolTable::get(std::string const &id)
     SymbolTable *top = this;
     while (top != NULL)
     {
-        std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
+        // std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
 
         if (top->table.count(id))
             return top->table[id];
@@ -87,15 +87,15 @@ bool SymbolTable::add_method_param(std::string id, std::string type)
     int p_type = DataTypes::get_instance()->get_type_int(type);
     this->table[id]->m_params.push_back(p_type);
 
-    std::cout
-        << "[ST '"
-        << this->name
-        << "']: add_param: ("
-        << id
-        << ", "
-        << type
-        << ")"
-        << std::endl;
+    // std::cout
+    //     << "[ST '"
+    //     << this->name
+    //     << "']: add_param: ("
+    //     << id
+    //     << ", "
+    //     << type
+    //     << ")"
+    //     << std::endl;
 
     return true;
 }
@@ -114,18 +114,18 @@ bool SymbolTable::add_struct_table(std::string id, SymbolTable *table)
  */
 SymbolTable *SymbolTable::get_struct_table(std::string id)
 {
-    std::cout
-        << "[ST '"
-        << this->name
-        << "']: get_struct_table: '"
-        << id
-        << "'"
-        << std::endl;
+    // std::cout
+    //     << "[ST '"
+    //     << this->name
+    //     << "']: get_struct_table: '"
+    //     << id
+    //     << "'"
+    //     << std::endl;
 
     SymbolTable *top = this;
     while (top != NULL)
     {
-        std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
+        // std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
 
         if (top->table.count(id))
             return top->struct_tables[id];

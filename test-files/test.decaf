@@ -1,27 +1,7 @@
 class Program
-{
-	int a;
-
-	struct A
-	{
-		int a;
-	};
-
-	struct B
-	{
-		struct A a;
-	};
-
-	struct C
-	{
-		struct B b;
-	};
-
+{	
 	void main()
 	{
-		struct C c;
-		int i;
-
-		c.b.a.a = 1;
+		(1 + 2) + 3;
 	}
 }

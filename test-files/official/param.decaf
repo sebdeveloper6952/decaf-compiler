@@ -6,7 +6,7 @@ void OutputInt(int n)
 
 }
 
-int InputInt(void)
+int InputInt()
 {
 
 	return 0;
@@ -19,7 +19,7 @@ void Test(int a, int b, int c, int d,int e,int f,int g,int h,int i,int j,int k,i
 	OutputInt(resultado);
 }
 
-void main(void)
+void main()
 {
 	int n;
 	int f;

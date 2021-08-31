@@ -52,7 +52,7 @@ int main(int argc, const char *argv[])
     tree::ParseTreeWalker::DEFAULT.walk(&st_listener, tree);
 
     // TODO: remove
-    table->print_table();
+    // table->print_table();
 
     return 0;
 }
