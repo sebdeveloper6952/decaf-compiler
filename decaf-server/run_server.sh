@@ -1,0 +1,1 @@
+export FLASK_APP=main && ./venv/bin/flask run --port=8081
