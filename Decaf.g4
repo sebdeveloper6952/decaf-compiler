@@ -68,7 +68,7 @@ literal: int_literal | char_literal | bool_literal;
 
 int_literal: NUM;
 
-char_literal: APOSTROPHE CHAR APOSTROPHE;
+char_literal: '\'' CHAR '\'';
 
 bool_literal: TRUE | FALSE;
 
@@ -91,13 +91,8 @@ FALSE: 'false';
 IF: 'if';
 ELSE: 'else';
 VOID: 'void';
-
 ID: ALPHA ALPHA_NUM*;
-
+CHAR: LETTER;
 NUM: DIGIT DIGIT*;
-
-APOSTROPHE: '\'';
-
-CHAR: [a-zA-Z0-9];
 
 WHITESPACE: [ \t\r\n] -> skip;

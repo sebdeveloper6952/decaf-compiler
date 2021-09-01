@@ -249,8 +249,6 @@ void SymbolTableListener::enterLoc_var(DecafParser::Loc_varContext *ctx)
     if (DecafParser::Loc_memberContext *d =
             dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
-        // std::cout << "enterLoc_var" << std::endl;
-
         std::string struct_name = d->ID()->getText();
         SymbolTableEntry *e = this->table->get(struct_name);
         if (e == NULL)
@@ -296,7 +294,6 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
             dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
         SymbolTable *top = this->struct_tables.top();
-
         SymbolTableEntry *e = top->get(ctx->ID()->getText());
         if (e == NULL)
         {
@@ -310,8 +307,6 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
     }
     else
     {
-        // std::cout << "exitLoc_var: " << ctx->getText() << std::endl;
-
         SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
         if (e == NULL)
         {
@@ -326,9 +321,9 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
 
 void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
 {
-    // std::cout << "enterLoc_array" << std::endl;
     SymbolTableEntry *entry = NULL;
 
+    // if parent is a struct
     if (DecafParser::Loc_memberContext *d = dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
         SymbolTable *top = this->struct_tables.top();
@@ -358,6 +353,9 @@ void SymbolTableListener::enterLoc_array(DecafParser::Loc_arrayContext *ctx)
 
         return;
     }
+
+    // location has type void
+    put_node_type(ctx, T_VOID);
 }
 
 void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
@@ -373,10 +371,27 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     if (expr_type != T_INT)
     {
         put_node_type(ctx, T_ERROR);
-        std::string msg = "array index must be of type 'INTEGER'";
+        std::string msg = "array index must be of type 'int'";
         print_error(msg, ctx->start->getLine());
 
         return;
+    }
+
+    // try to parse expression to validate array size
+    try
+    {
+        if (std::stol(expr->getText()) < 0)
+        {
+            put_node_type(ctx, T_ERROR);
+
+            std::string msg = "invalid array index.";
+            print_error(msg, ctx->start->getLine());
+
+            return;
+        }
+    }
+    catch (const std::exception &e)
+    {
     }
 
     // set this node type as the type of the array
@@ -405,7 +420,6 @@ void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
     // if parent is a struct
     if (DecafParser::Loc_memberContext *d = dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
-        // std::cout << "\tsearch in parent symbol table" << std::endl;
         SymbolTable *top = this->struct_tables.top();
         entry = top->get(var_name);
     }
@@ -424,11 +438,23 @@ void SymbolTableListener::enterLoc_member(DecafParser::Loc_memberContext *ctx)
         }
     }
 
+    // if location refers to array, validate it is an array
+    if (ctx->expression() != NULL && entry->obj_type != O_ARRAY)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = "id '" + var_name + "' is not an array.";
+        print_error(msg, ctx->start->getLine());
+    }
+
     // var_name is a struct, get its struct symbol table
     SymbolTable *struct_table = this->table->get_struct_table(entry->type);
     if (struct_table == NULL)
     {
         put_node_type(ctx, T_ERROR);
+
+        std::string msg = "id '" + var_name + "' not found.";
+        print_error(msg, ctx->start->getLine());
 
         return;
     }
@@ -670,8 +696,6 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
  */
 void SymbolTableListener::enterExpr_eq(DecafParser::Expr_eqContext *ctx)
 {
-    // std::cout << std::endl
-    //           << "enterExpr_eq" << std::endl;
 }
 
 /**
@@ -824,13 +848,12 @@ void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx
 /// ---------------------------------------- Statements ----------------------------------------
 void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *ctx)
 {
-    // // std::cout << std::endl
-    //           << "exitSt_assignment:\n\t" << ctx->getText() << std::endl;
-
     DecafParser::LocationContext *loc = ctx->location();
     DecafParser::ExpressionContext *expr = ctx->expression();
 
     int loc_type = get_node_type(loc);
+    // if (loc->children.size() == 1)
+    //     loc_type = get_node_type(loc->children[0]);
 
     int expr_type = get_node_type(expr);
     if (expr->children.size() == 1)
@@ -1060,10 +1083,15 @@ void SymbolTableListener::push_struct_table(SymbolTable *table)
 
 SymbolTable *SymbolTableListener::pop_struct_table()
 {
-    SymbolTable *top = this->struct_tables.top();
-    this->struct_tables.pop();
+    if (this->struct_tables.size())
+    {
+        SymbolTable *top = this->struct_tables.top();
+        this->struct_tables.pop();
 
-    return top;
+        return top;
+    }
+
+    return NULL;
 }
 
 void SymbolTableListener::print_error(std::string msg, size_t line_num)

@@ -305,7 +305,7 @@ export default {
       successImg: "@/assets/img/icon_done.svg",
       dangerImg: "@/assets/img/icon_close.svg",
       notificationImg: "",
-      // apiUrl: "https://a5b4-181-209-150-146.ngrok.io",
+      // apiUrl: "https://48f7-181-209-150-146.ngrok.io",
       apiUrl: "http://127.0.0.1:8081",
     };
   },

@@ -1,7 +1,15 @@
 class Program
-{	
+{
+  struct new {
+    int a;
+    int b;
+  };
+  
+  int a;
+  struct new n;
+	
 	void main()
 	{
-		(1 + 2) + 3;
+		n.a.a.a.a.b.a.b.a.b = 1;
 	}
 }
