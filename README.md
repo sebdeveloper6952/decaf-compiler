@@ -1,12 +1,12 @@
 # Decaf Compiler
 - Universidad del Valle de Guatemala
 - Course: Compiler Construction
-- Sebastian Arriola Bethanourt - 11463
+- Sebastian Arriola Bethancourt - 11463
 
 ## Description
 - Repository for a Decaf compiler that will be constructed for our university course.
 
-<img src="./images/decaf.png" width="1080" height="720">
+<img src="./images/decaf.png" width="1000" height="600">
 
 ## Requirements to Test the Project
 - python3
