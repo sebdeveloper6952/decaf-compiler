@@ -66,7 +66,7 @@
         <p>&emsp;"author": "sebastian arriola",</p>
         <p>
           &emsp;"description": "Decaf language lexical and semantic analysis and
-          soon a complete compiler."
+          soon a complete compiler.",
         </p>
         <p>&emsp;"tools": [</p>
         <p>&emsp;&emsp;"c++",</p>
