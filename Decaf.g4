@@ -1,6 +1,31 @@
 grammar Decaf;
 
 /*
+ * Lexer Rules
+ */
+fragment ALPHA: [a-zA-Z_];
+
+fragment DIGIT: [0-9];
+
+fragment ALPHA_NUM: ALPHA | DIGIT;
+
+fragment LETTER: [a-zA-Z];
+
+CLASS: 'class';
+PROGRAM: 'Program';
+STRUCT: 'struct';
+TRUE: 'true';
+FALSE: 'false';
+IF: 'if';
+ELSE: 'else';
+VOID: 'void';
+ID: ALPHA ALPHA_NUM*;
+CHAR: '\'' LETTER '\'';
+NUM: DIGIT DIGIT*;
+
+WHITESPACE: [ \t\r\n] -> skip;
+
+/*
  * Parser Rules
  */
 program: 'class' 'Program' '{' (declaration)* '}' EOF;
@@ -68,31 +93,6 @@ literal: int_literal | char_literal | bool_literal;
 
 int_literal: NUM;
 
-char_literal: '\'' CHAR '\'';
+char_literal: CHAR;
 
 bool_literal: TRUE | FALSE;
-
-/*
- * Lexer Rules
- */
-fragment ALPHA: [a-zA-Z_];
-
-fragment DIGIT: [0-9];
-
-fragment ALPHA_NUM: ALPHA | DIGIT;
-
-fragment LETTER: [a-zA-Z];
-
-CLASS: 'class';
-PROGRAM: 'Program';
-STRUCT: 'struct';
-TRUE: 'true';
-FALSE: 'false';
-IF: 'if';
-ELSE: 'else';
-VOID: 'void';
-ID: ALPHA ALPHA_NUM*;
-CHAR: LETTER;
-NUM: DIGIT DIGIT*;
-
-WHITESPACE: [ \t\r\n] -> skip;

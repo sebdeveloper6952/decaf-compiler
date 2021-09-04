@@ -1,15 +1,8 @@
 class Program
 {
-  struct new {
-    int a;
-    int b;
-  };
-  
-  int a;
-  struct new n;
-	
 	void main()
 	{
-		n.a.a.a.a.b.a.b.a.b = 1;
+    char a;
+    a = 'b';
 	}
 }
