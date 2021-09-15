@@ -1,8 +1,17 @@
 class Program
 {
+	struct A
+	{
+		int arr[10];
+		int b;
+	};
+
 	void main()
 	{
-    char a;
-    a = 'b';
+		int a_0;
+		int a_1[10];
+		struct A a_2;
+		struct A a_3[200];
+		bool a_4;
 	}
 }

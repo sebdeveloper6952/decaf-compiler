@@ -86,7 +86,8 @@ void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
 void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
 {
     // pop the symbol table for this block
-    this->pop_table();
+    SymbolTable *top = this->pop_table();
+    top->print_table();
 }
 
 /// ---------------------------------------- Var Declarations ----------------------------------------
@@ -175,7 +176,12 @@ void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declConte
     {
         // save new variable of type struct
         int struct_t = DataTypes::get_instance()->get_type_int(struct_type);
-        if (!this->table->put(O_ARRAY, struct_t, struct_id, struct_type, 0))
+
+        // calculate array size as NUM * STRUCT_SIZE
+        int array_size = std::stoi(ctx->NUM()->getText());
+        array_size *= struct_table->get_offset();
+
+        if (!this->table->put(O_ARRAY, struct_t, struct_id, struct_type, array_size))
         {
             put_node_type(ctx, T_ERROR);
 
@@ -190,7 +196,8 @@ void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declConte
     {
         // save new variable of type struct
         int struct_t = DataTypes::get_instance()->get_type_int(struct_type);
-        if (!this->table->put(O_STRUCT_I, struct_t, struct_id, struct_type, 0))
+
+        if (!this->table->put(O_STRUCT_I, struct_t, struct_id, struct_type, struct_table->get_offset()))
         {
             put_node_type(ctx, T_ERROR);
 

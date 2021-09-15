@@ -57,5 +57,7 @@ std::string DataTypes::int_to_obj_type(int type)
         t = "METHOD";
     if (type == O_STRUCT)
         t = "STRUCT";
+    if (type == O_STRUCT_I)
+        t = "STRUCT_INSTANCE";
     return t;
 }

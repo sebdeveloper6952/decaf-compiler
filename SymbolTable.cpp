@@ -25,7 +25,6 @@ bool SymbolTable::put(
     std::string const &type,
     size_t size)
 {
-    // std::cout << "[ST '" << this->name << "']: put(): " << id << std::endl;
     if (this->table.count(id))
         return false;
 
@@ -48,10 +47,18 @@ bool SymbolTable::put(
     else if (type == "char")
         new_offset += W_CHAR;
 
+    // struct instance
+    if (obj_type == O_STRUCT_I)
+        new_offset = size;
+
     // if obj is an array, multiply offset by array size
     if (obj_type == O_ARRAY)
         new_offset *= size;
-    this->offset += new_offset;
+
+    if (new_offset > 0)
+        this->offset += new_offset;
+    else
+        this->offset += size;
 
     return true;
 }
@@ -61,8 +68,6 @@ SymbolTableEntry *SymbolTable::get(std::string const &id)
     SymbolTable *top = this;
     while (top != NULL)
     {
-        // std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
-
         if (top->table.count(id))
             return top->table[id];
         top = top->parent;
@@ -83,19 +88,8 @@ bool SymbolTable::add_method_param(std::string id, std::string type)
     if (this->table.count(id) == 0)
         return false;
 
-    // int p_type = DataTypes::type_to_int(type);
     int p_type = DataTypes::get_instance()->get_type_int(type);
     this->table[id]->m_params.push_back(p_type);
-
-    // std::cout
-    //     << "[ST '"
-    //     << this->name
-    //     << "']: add_param: ("
-    //     << id
-    //     << ", "
-    //     << type
-    //     << ")"
-    //     << std::endl;
 
     return true;
 }
@@ -114,19 +108,9 @@ bool SymbolTable::add_struct_table(std::string id, SymbolTable *table)
  */
 SymbolTable *SymbolTable::get_struct_table(std::string id)
 {
-    // std::cout
-    //     << "[ST '"
-    //     << this->name
-    //     << "']: get_struct_table: '"
-    //     << id
-    //     << "'"
-    //     << std::endl;
-
     SymbolTable *top = this;
     while (top != NULL)
     {
-        // std::cout << "[ST '" << top->get_name() << "']: searching id: " << id << std::endl;
-
         if (top->table.count(id))
             return top->struct_tables[id];
         top = top->parent;
@@ -135,13 +119,20 @@ SymbolTable *SymbolTable::get_struct_table(std::string id)
     return NULL;
 }
 
+size_t SymbolTable::get_offset()
+{
+    return this->offset;
+}
+
 /**
  * Print the entries of a symbol table.
  */
 void SymbolTable::print_table()
 {
+    std::cout << "\n******************** " << this->get_name() << std::endl;
     for (const auto &elem : this->table)
     {
         std::cout << elem.first << " => " << *elem.second << std::endl;
     }
+    std::cout << "*************************************" << std::endl;
 }
