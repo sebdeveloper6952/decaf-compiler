@@ -72,13 +72,13 @@ expression:
 	methodCall									# expr_method_call
 	| location									# expr_loc
 	| literal									# expr_literal
+	| '-' expression							# expr_neg
 	| expression ('*' | '/' | '%') expression	# expr_arith_0
 	| expression ('+' | '-') expression			# expr_arith_1
+	| '!' expression							# expr_not
 	| expression rel_op expression				# expr_rel
 	| expression eq_op expression				# expr_eq
 	| expression cond_op expression				# expr_cond
-	| '-' expression							# expr_neg
-	| '!' expression							# expr_not
 	| '(' expression ')'						# expr_par;
 
 methodCall: ID '(' (expression (',' expression)*)? ')';

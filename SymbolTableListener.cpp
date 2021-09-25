@@ -48,7 +48,7 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
     // program is valid
     put_node_type(ctx, T_VOID);
 
-    std::cout << "[INFO] program is valid ✅" << std::endl;
+    std::cout << "\n[INFO] program is valid ✅" << std::endl;
 }
 
 // Enter a new block
@@ -618,10 +618,10 @@ void SymbolTableListener::exitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx
     put_node_attrs(ctx, NULL, temp, "");
 
     // e.addr = e0.addr OP e1.addr
-    auto n0 = get_node_attrs(ctx->children[0]);
+    NodeAttrs *n0 = get_node_attrs(ctx->children[0]);
     if (ctx->children[0]->children.size() == 1)
         n0 = get_node_attrs(ctx->children[0]->children[0]);
-    auto n1 = get_node_attrs(ctx->children[2]);
+    NodeAttrs *n1 = get_node_attrs(ctx->children[2]);
     if (ctx->children[2]->children.size() == 1)
         n1 = get_node_attrs(ctx->children[2]->children[0]);
 
@@ -826,6 +826,17 @@ void SymbolTableListener::exitExpr_neg(DecafParser::Expr_negContext *ctx)
 
     // save this node type
     put_node_type(ctx, T_INT);
+
+    // icg
+    // e.addr = new Temp()
+    std::string addr = "t" + std::to_string(++this->temp_count);
+    // e.addr = '-' e1.addr
+    NodeAttrs *expr_e = get_node_attrs(expr);
+    if (expr->children.size() == 1)
+        expr_e = get_node_attrs(expr->children[0]);
+    std::cout << addr << "=-" << expr_e->addr << std::endl;
+    std::cout << "here1" << std::endl;
+    put_node_attrs(ctx, NULL, addr, "");
 }
 
 /**

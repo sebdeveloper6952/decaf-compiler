@@ -3,10 +3,9 @@ class Program
 	int a;
 	int b;
 	int c;
-	int d;
 
 	void main()
 	{
-		a = b + c * d;
+		a = b + -c;
 	}
 }
