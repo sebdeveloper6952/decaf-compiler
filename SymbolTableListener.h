@@ -1,10 +1,10 @@
 #pragma once
 
 #include <stack>
-
 #include "antlr4-runtime.h"
 #include "DecafBaseListener.h"
 #include "SymbolTable.h"
+#include "NodeAttrs.h"
 
 /**
  * This class provides an empty implementation of DecafListener,
@@ -23,6 +23,8 @@ private:
     void print_error(std::string msg, size_t line_num);
     antlr4::tree::ParseTreeProperty<int> node_types;
     std::stack<SymbolTable *> struct_tables;
+    antlr4::tree::ParseTreeProperty<NodeAttrs *> node_attrs;
+    uint temp_count = 0;
 
 public:
     SymbolTableListener(SymbolTable *table);
@@ -63,6 +65,7 @@ public:
 
     // method declaration
     void enterMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
+    void exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx);
 
     // method calls
     void enterMethodCall(DecafParser::MethodCallContext *ctx);
@@ -101,4 +104,10 @@ public:
     int get_node_type(antlr4::tree::ParseTree *node);
     void push_struct_table(SymbolTable *table);
     SymbolTable *pop_struct_table();
+    void put_node_attrs(
+        antlr4::tree::ParseTree *node,
+        SymbolTableEntry *entry,
+        std::string addr,
+        std::string code);
+    NodeAttrs *get_node_attrs(antlr4::tree::ParseTree *node);
 };

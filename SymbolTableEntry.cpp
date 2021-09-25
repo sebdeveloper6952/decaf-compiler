@@ -7,7 +7,8 @@ SymbolTableEntry::SymbolTableEntry(
     int data_type,
     std::string const &type,
     size_t offset,
-    size_t size = 0)
+    size_t size = 0,
+    bool is_global = false)
 {
     this->id = id;
     this->obj_type = obj_type;
@@ -15,6 +16,7 @@ SymbolTableEntry::SymbolTableEntry(
     this->type = type;
     this->offset = offset;
     this->size = size;
+    this->is_global = is_global;
 }
 
 // Override << operator

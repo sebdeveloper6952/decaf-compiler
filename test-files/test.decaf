@@ -1,17 +1,12 @@
 class Program
 {
-	struct A
-	{
-		int arr[10];
-		int b;
-	};
+	int a;
+	int b;
+	int c;
+	int d;
 
 	void main()
 	{
-		int a_0;
-		int a_1[10];
-		struct A a_2;
-		struct A a_3[200];
-		bool a_4;
+		a = b + c * d;
 	}
 }

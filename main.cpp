@@ -31,13 +31,6 @@ int main(int argc, const char *argv[])
     DecafLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
 
-    // TODO: remove, only for debugging.
-    // tokens.fill();
-    // for (antlr4::Token *token : tokens.getTokens())
-    // {
-    //     std::cout << token->toString() << std::endl;
-    // }
-
     // Create a parser which parses the token stream
     DecafParser parser(&tokens);
 
@@ -52,7 +45,7 @@ int main(int argc, const char *argv[])
     tree::ParseTreeWalker::DEFAULT.walk(&st_listener, tree);
 
     // TODO: remove
-    table->print_table();
+    // table->print_table();
 
     return 0;
 }

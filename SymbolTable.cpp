@@ -35,7 +35,8 @@ bool SymbolTable::put(
         data_type,
         type,
         this->offset,
-        size);
+        size,
+        this->name == "global");
     this->table[id] = entry;
 
     // update the offset for the next data
@@ -129,7 +130,7 @@ size_t SymbolTable::get_offset()
  */
 void SymbolTable::print_table()
 {
-    std::cout << "\n******************** " << this->get_name() << std::endl;
+    std::cout << "\n******************** " << this->get_name() << " ********************" << std::endl;
     for (const auto &elem : this->table)
     {
         std::cout << elem.first << " => " << *elem.second << std::endl;

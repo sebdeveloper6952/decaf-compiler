@@ -1,8 +1,6 @@
 #include <iostream>
-
 #include "SymbolTableListener.h"
 #include "SymbolTable.h"
-#include "SymbolTableListener.h"
 #include "DataTypes.h"
 
 SymbolTableListener::SymbolTableListener(SymbolTable *table)
@@ -87,7 +85,7 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
 {
     // pop the symbol table for this block
     SymbolTable *top = this->pop_table();
-    top->print_table();
+    // top->print_table();
 }
 
 /// ---------------------------------------- Var Declarations ----------------------------------------
@@ -323,6 +321,12 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
         }
 
         put_node_type(ctx, e->data_type);
+
+        // icg
+        // e.addr = base[offset]
+        std::string addr = e->is_global ? "g" : "l";
+        addr += "[" + std::to_string(e->offset) + "]";
+        put_node_attrs(ctx, e, addr, "");
     }
 }
 
@@ -508,6 +512,9 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
     }
 }
 
+void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx)
+{
+}
 /// -----------------------------------------------------------------------------------------------------
 
 /// ---------------------------------------- Method Calls ----------------------------------------
@@ -580,6 +587,21 @@ void SymbolTableListener::enterExpr_arith_0(DecafParser::Expr_arith_0Context *ct
 void SymbolTableListener::exitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx)
 {
     process_arith_expr(ctx);
+
+    // intermediate code generation
+    // e.addr = new Temp()
+    std::string temp = "t" + std::to_string(++this->temp_count);
+    put_node_attrs(ctx, NULL, temp, "");
+
+    // e.addr = e0.addr OP e1.addr
+    auto n0 = get_node_attrs(ctx->children[0]);
+    if (ctx->children[0]->children.size() == 1)
+        n0 = get_node_attrs(ctx->children[0]->children[0]);
+    auto n1 = get_node_attrs(ctx->children[2]);
+    if (ctx->children[2]->children.size() == 1)
+        n1 = get_node_attrs(ctx->children[2]->children[0]);
+
+    std::cout << temp << "=" << n0->addr << ctx->children[1]->getText() << n1->addr << std::endl;
 }
 
 void SymbolTableListener::enterExpr_arith_1(DecafParser::Expr_arith_1Context *ctx)
@@ -589,6 +611,21 @@ void SymbolTableListener::enterExpr_arith_1(DecafParser::Expr_arith_1Context *ct
 void SymbolTableListener::exitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx)
 {
     process_arith_expr(ctx);
+
+    // intermediate code generation
+    // e.addr = new Temp()
+    std::string temp = "t" + std::to_string(++this->temp_count);
+    put_node_attrs(ctx, NULL, temp, "");
+
+    // e.addr = e0.addr OP e1.addr
+    auto n0 = get_node_attrs(ctx->children[0]);
+    if (ctx->children[0]->children.size() == 1)
+        n0 = get_node_attrs(ctx->children[0]->children[0]);
+    auto n1 = get_node_attrs(ctx->children[2]);
+    if (ctx->children[2]->children.size() == 1)
+        n1 = get_node_attrs(ctx->children[2]->children[0]);
+
+    std::cout << temp << "=" << n0->addr << ctx->children[1]->getText() << n1->addr << std::endl;
 }
 
 void SymbolTableListener::enterExpr_rel(DecafParser::Expr_relContext *ctx)
@@ -604,7 +641,7 @@ void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
     if (get_node_type(ctx->children[0]) != T_INT)
     {
         size_t line = ctx->start->getLine();
-        std::string msg = ctx->children[0]->getText() + "' is not an integer";
+        std::string msg = "'" + ctx->children[0]->getText() + "' is not an integer";
         print_error(msg, ctx->start->getLine());
         put_node_type(ctx, T_ERROR);
     }
@@ -612,7 +649,7 @@ void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
     if (get_node_type(ctx->children[2]) != T_INT)
     {
         size_t line = ctx->start->getLine();
-        std::string msg = ctx->children[2]->getText() + "' is not an integer";
+        std::string msg = "'" + ctx->children[2]->getText() + "' is not an integer";
         print_error(msg, ctx->start->getLine());
         put_node_type(ctx, T_ERROR);
     }
@@ -859,8 +896,6 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     DecafParser::ExpressionContext *expr = ctx->expression();
 
     int loc_type = get_node_type(loc);
-    // if (loc->children.size() == 1)
-    //     loc_type = get_node_type(loc->children[0]);
 
     int expr_type = get_node_type(expr);
     if (expr->children.size() == 1)
@@ -878,7 +913,14 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
         return;
     }
 
+    // save node type
     put_node_type(ctx, T_VOID);
+
+    // intermediate code generation
+    // emit(top.get(location.id) '=' e1.addr)
+    NodeAttrs *loc_e = get_node_attrs(loc);
+    NodeAttrs *expr_e = get_node_attrs(expr);
+    std::cout << loc_e->addr << "=" << expr_e->addr << std::endl;
 }
 
 void SymbolTableListener::enterSt_if(DecafParser::St_ifContext *ctx)
@@ -1063,7 +1105,7 @@ void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = ctx->children[0]->getText() + "' is not an integer";
+        std::string msg = "'" + ctx->children[0]->getText() + "' is not an integer";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -1073,7 +1115,7 @@ void SymbolTableListener::process_arith_expr(DecafParser::ExpressionContext *ctx
     {
         put_node_type(ctx, T_ERROR);
 
-        std::string msg = ctx->children[2]->getText() + "' is not an integer";
+        std::string msg = "'" + ctx->children[2]->getText() + "' is not an integer";
         print_error(msg, ctx->start->getLine());
 
         return;
@@ -1099,6 +1141,24 @@ SymbolTable *SymbolTableListener::pop_struct_table()
     }
 
     return NULL;
+}
+
+void SymbolTableListener::put_node_attrs(
+    antlr4::tree::ParseTree *node,
+    SymbolTableEntry *entry,
+    std::string addr,
+    std::string code)
+{
+
+    NodeAttrs *attrs = new NodeAttrs(entry, addr, code);
+    this->node_attrs.put(node, attrs);
+}
+
+NodeAttrs *SymbolTableListener::get_node_attrs(antlr4::tree::ParseTree *node)
+{
+    NodeAttrs *attrs = this->node_attrs.get(node);
+
+    return attrs;
 }
 
 void SymbolTableListener::print_error(std::string msg, size_t line_num)
