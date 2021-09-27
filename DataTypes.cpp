@@ -61,3 +61,14 @@ std::string DataTypes::int_to_obj_type(int type)
         t = "STRUCT_INSTANCE";
     return t;
 }
+
+uint DataTypes::int_to_width(int type)
+{
+    if (type == T_INT)
+        return W_INT;
+    if (type == T_BOOL)
+        return W_BOOL;
+    if (type == T_CHAR)
+        return W_CHAR;
+    return 0;
+}

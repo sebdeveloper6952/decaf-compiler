@@ -37,7 +37,6 @@ public:
     int add_type(std::string new_type);
     std::string get_type(int type);
     int get_type_int(std::string type);
-    // static std::string int_to_type(int type);
-    // static int type_to_int(std::string type);
     static std::string int_to_obj_type(int type);
+    static uint int_to_width(int type);
 };

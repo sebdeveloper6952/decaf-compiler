@@ -22,12 +22,13 @@ VOID: 'void';
 ID: ALPHA ALPHA_NUM*;
 CHAR: '\'' LETTER '\'';
 NUM: DIGIT DIGIT*;
-
 WHITESPACE: [ \t\r\n] -> skip;
+COMMENT: '//' ~('\r' | '\n')+ -> skip;
 
 /*
  * Parser Rules
  */
+
 program: 'class' 'Program' '{' (declaration)* '}' EOF;
 
 declaration:

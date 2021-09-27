@@ -25,6 +25,7 @@ private:
     std::stack<SymbolTable *> struct_tables;
     antlr4::tree::ParseTreeProperty<NodeAttrs *> node_attrs;
     uint temp_count = 0;
+    std::vector<std::string> vec_code;
 
 public:
     SymbolTableListener(SymbolTable *table);
@@ -88,6 +89,7 @@ public:
     void exitExpr_method_call(DecafParser::Expr_method_callContext *ctx);
     void exitExpr_neg(DecafParser::Expr_negContext *ctx);
     void exitExpr_par(DecafParser::Expr_parContext *ctx);
+    void exitExpr_loc(DecafParser::Expr_locContext *ctx);
 
     // literals
     void enterLiteral(DecafParser::LiteralContext *ctx);
@@ -110,4 +112,5 @@ public:
         std::string addr,
         std::string code);
     NodeAttrs *get_node_attrs(antlr4::tree::ParseTree *node);
+    void emit(std::string code);
 };

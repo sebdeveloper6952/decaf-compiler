@@ -1,11 +1,18 @@
 class Program
 {
-	int a;
-	int b;
-	int c;
+	// line comment
+
+	struct B { int a; int b; int c; };
+	struct A { struct B b; };
 
 	void main()
 	{
-		a = b + -c;
+		int loc;
+		int aa;
+		int bb;
+		int array[10];
+		struct A a;
+
+		array[5] = a.b.c;
 	}
 }
