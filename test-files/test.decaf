@@ -1,18 +1,12 @@
 class Program
 {
-	// line comment
-
-	struct B { int a; int b; int c; };
-	struct A { struct B b; };
-
 	void main()
 	{
-		int loc;
-		int aa;
-		int bb;
-		int array[10];
-		struct A a;
+		int x;
 
-		array[5] = a.b.c;
+		if (x < 100 || x > 200)
+		{
+			int a;
+		}	
 	}
 }

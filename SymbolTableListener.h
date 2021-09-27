@@ -17,15 +17,16 @@ private:
     SymbolTable *table;
     size_t num_tables = 0;
     bool is_main_valid;
-    void push_table();
-    SymbolTable *pop_table();
-    void process_arith_expr(DecafParser::ExpressionContext *ctx);
-    void print_error(std::string msg, size_t line_num);
     antlr4::tree::ParseTreeProperty<int> node_types;
     std::stack<SymbolTable *> struct_tables;
     antlr4::tree::ParseTreeProperty<NodeAttrs *> node_attrs;
     uint temp_count = 0;
     std::vector<std::string> vec_code;
+    void push_table();
+    SymbolTable *pop_table();
+    void process_arith_expr(DecafParser::ExpressionContext *ctx);
+    void print_error(std::string msg, size_t line_num);
+    void gen_code_expr(DecafParser::ExpressionContext *ctx);
 
 public:
     SymbolTableListener(SymbolTable *table);
@@ -112,5 +113,6 @@ public:
         std::string addr,
         std::string code);
     NodeAttrs *get_node_attrs(antlr4::tree::ParseTree *node);
+    std::string new_temp();
     void emit(std::string code);
 };
