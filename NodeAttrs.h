@@ -21,5 +21,6 @@ public:
     std::string l_next;
     std::string l_true;
     std::string l_false;
+    std::string l_begin;
     std::string value;
 };

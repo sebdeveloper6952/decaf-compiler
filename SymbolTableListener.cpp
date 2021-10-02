@@ -784,9 +784,7 @@ void SymbolTableListener::exitExpr_cond_and(DecafParser::Expr_cond_andContext *c
     put_node_type(ctx, T_BOOL);
 
     // icg
-    // if (DecafParser::St_ifContext *d =
-    //         dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
-    // {
+    // TODO resolve when to generate j code and when not
     NodeAttrs *attrs = this->get_node_attrs(ctx);
     NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
     NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
@@ -797,7 +795,6 @@ void SymbolTableListener::exitExpr_cond_and(DecafParser::Expr_cond_andContext *c
     else
         attrs->code += e0->l_true + ":\n";
     attrs->code += e1->code + e1->j_code;
-    // }
 }
 void SymbolTableListener::enterExpr_cond_or(DecafParser::Expr_cond_orContext *ctx)
 {
@@ -857,9 +854,8 @@ void SymbolTableListener::exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx
     put_node_type(ctx, T_BOOL);
 
     // icg
-    // if (DecafParser::St_ifContext *d =
-    //         dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
-    // {
+    // TODO resolve when to generate j code and when not
+    // TODO remove code repetition
     NodeAttrs *attrs = this->get_node_attrs(ctx);
     NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
     NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
@@ -870,7 +866,6 @@ void SymbolTableListener::exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx
     else
         attrs->code += e0->l_true + ":\n";
     attrs->code += e1->code + e1->j_code;
-    // }
 }
 
 /**
@@ -1226,13 +1221,36 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
         attrs->code += else_block_attrs->code;
     }
 
-    this->emit("if " + expr_attrs->addr + " goto " + expr_attrs->l_true);
-    this->emit("goto " + expr_attrs->l_false);
-    this->emit(expr_attrs->l_true + ":");
+    // s.next
+    attrs->code += attrs->l_next + ": \n";
+
+    // this->emit("if " + expr_attrs->addr + " goto " + expr_attrs->l_true);
+    // this->emit("goto " + expr_attrs->l_false);
+    // this->emit(expr_attrs->l_true + ":");
 }
 
 void SymbolTableListener::enterSt_while(DecafParser::St_whileContext *ctx)
 {
+    NodeAttrs *s_attrs = new NodeAttrs();
+    NodeAttrs *expr_attrs = new NodeAttrs();
+    NodeAttrs *block_attrs = new NodeAttrs();
+
+    // S.next = newlabel()
+    s_attrs->l_next = this->new_label();
+    // begin = newlabel()
+    s_attrs->l_begin = this->new_label();
+
+    // expr.true = newlabel()
+    expr_attrs->l_true = this->new_label();
+    // expr.false = S.next
+    expr_attrs->l_false = s_attrs->l_next;
+
+    // block.next = begin
+    block_attrs->l_next = s_attrs->l_begin;
+
+    this->put_node_attrs(ctx, s_attrs);
+    this->put_node_attrs(ctx->expression(), expr_attrs);
+    this->put_node_attrs(ctx->block(), block_attrs);
 }
 
 void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
@@ -1255,6 +1273,17 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     }
 
     put_node_type(ctx, T_VOID);
+
+    // icg
+    NodeAttrs *s_attrs = this->get_node_attrs(ctx);
+    NodeAttrs *expr_attrs = this->get_node_attrs(ctx->expression());
+    NodeAttrs *block_attrs = this->get_node_attrs(ctx->block());
+
+    s_attrs->code = s_attrs->l_begin + ":\n";
+    s_attrs->code += expr_attrs->code + expr_attrs->j_code;
+    s_attrs->code += expr_attrs->l_true + ":\n";
+    s_attrs->code += block_attrs->code;
+    s_attrs->code += "goto " + s_attrs->l_begin;
 }
 
 void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
