@@ -10,7 +10,11 @@ class Program
 
 		if (x < 100)
 		{
-			int a;
+			x = 1 + 2;
+		}
+		else
+		{
+			x = 0;
 		}
 	}
 }

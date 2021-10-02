@@ -28,6 +28,7 @@ private:
     void process_arith_expr(DecafParser::ExpressionContext *ctx);
     void print_error(std::string msg, size_t line_num);
     void gen_code_expr(DecafParser::ExpressionContext *ctx);
+    void gen_code_bool_expr(DecafParser::ExpressionContext *ctx);
 
 public:
     SymbolTableListener(SymbolTable *table);
