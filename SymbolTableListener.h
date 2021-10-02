@@ -21,6 +21,7 @@ private:
     std::stack<SymbolTable *> struct_tables;
     antlr4::tree::ParseTreeProperty<NodeAttrs *> node_attrs;
     uint temp_count = 0;
+    uint label_count = 0;
     std::vector<std::string> vec_code;
     void push_table();
     SymbolTable *pop_table();
@@ -109,10 +110,14 @@ public:
     SymbolTable *pop_struct_table();
     void put_node_attrs(
         antlr4::tree::ParseTree *node,
+        NodeAttrs *attrs);
+    void put_node_attrs(
+        antlr4::tree::ParseTree *node,
         SymbolTableEntry *entry,
         std::string addr,
         std::string code);
     NodeAttrs *get_node_attrs(antlr4::tree::ParseTree *node);
     std::string new_temp();
+    std::string new_label();
     void emit(std::string code);
 };
