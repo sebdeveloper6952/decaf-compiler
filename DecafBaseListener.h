@@ -91,6 +91,9 @@ public:
   virtual void enterExpr_neg(DecafParser::Expr_negContext * /*ctx*/) override { }
   virtual void exitExpr_neg(DecafParser::Expr_negContext * /*ctx*/) override { }
 
+  virtual void enterExpr_cond_or(DecafParser::Expr_cond_orContext * /*ctx*/) override { }
+  virtual void exitExpr_cond_or(DecafParser::Expr_cond_orContext * /*ctx*/) override { }
+
   virtual void enterExpr_par(DecafParser::Expr_parContext * /*ctx*/) override { }
   virtual void exitExpr_par(DecafParser::Expr_parContext * /*ctx*/) override { }
 
@@ -99,9 +102,6 @@ public:
 
   virtual void enterExpr_arith_0(DecafParser::Expr_arith_0Context * /*ctx*/) override { }
   virtual void exitExpr_arith_0(DecafParser::Expr_arith_0Context * /*ctx*/) override { }
-
-  virtual void enterExpr_cond(DecafParser::Expr_condContext * /*ctx*/) override { }
-  virtual void exitExpr_cond(DecafParser::Expr_condContext * /*ctx*/) override { }
 
   virtual void enterExpr_method_call(DecafParser::Expr_method_callContext * /*ctx*/) override { }
   virtual void exitExpr_method_call(DecafParser::Expr_method_callContext * /*ctx*/) override { }
@@ -114,6 +114,9 @@ public:
 
   virtual void enterExpr_not(DecafParser::Expr_notContext * /*ctx*/) override { }
   virtual void exitExpr_not(DecafParser::Expr_notContext * /*ctx*/) override { }
+
+  virtual void enterExpr_cond_and(DecafParser::Expr_cond_andContext * /*ctx*/) override { }
+  virtual void exitExpr_cond_and(DecafParser::Expr_cond_andContext * /*ctx*/) override { }
 
   virtual void enterMethodCall(DecafParser::MethodCallContext * /*ctx*/) override { }
   virtual void exitMethodCall(DecafParser::MethodCallContext * /*ctx*/) override { }

@@ -693,18 +693,6 @@ void SymbolTableListener::exitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx
 
 void SymbolTableListener::enterExpr_rel(DecafParser::Expr_relContext *ctx)
 {
-    // if (DecafParser::St_ifContext *d =
-    //         dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
-    // {
-    //     std::cout << "enterExpr_rel" << std::endl;
-    //     NodeAttrs *attrs = this->get_node_attrs(ctx->parent);
-    //     NodeAttrs *expr_attrs = new NodeAttrs();
-    //     expr_attrs->l_true = this->new_label();
-    //     expr_attrs->l_false = attrs->l_next;
-    //     if (d->block().size() > 1)
-    //         expr_attrs->l_false = this->new_label();
-    //     this->put_node_attrs(ctx, expr_attrs);
-    // }
 }
 
 void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
@@ -738,46 +726,28 @@ void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
     this->gen_code_expr(ctx);
 }
 
-void SymbolTableListener::enterExpr_cond(DecafParser::Expr_condContext *ctx)
+void SymbolTableListener::enterExpr_cond_and(DecafParser::Expr_cond_andContext *ctx)
 {
-    if (DecafParser::St_ifContext *d =
-            dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
-    {
-        std::cout << "enterExpr_cond" << std::endl;
-        NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
-        // NodeAttrs *attrs = new NodeAttrs();
-        NodeAttrs *attrs = this->get_node_attrs(ctx);
-        NodeAttrs *e0 = new NodeAttrs();
-        NodeAttrs *e1 = new NodeAttrs();
+    std::cout << "enterExpr_cond &&" << std::endl;
+    NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    NodeAttrs *e0 = new NodeAttrs();
+    NodeAttrs *e1 = new NodeAttrs();
 
-        // expr.true = newlabel()
-        // attrs->l_true = this->new_label();
-        // expr.false = parent.next
-        // attrs->l_false = parent_attrs->l_next;
+    // e0.true = expr.true
+    e0->l_true = this->new_label();
+    // e0.false = newlabel()
+    e0->l_false = attrs->l_false;
+    // e1.true = expr.true
+    e1->l_true = attrs->l_true;
+    // e1.false = expr.false
+    e1->l_false = attrs->l_false;
 
-        // e0.true = expr.true
-        e0->l_true = attrs->l_true;
-        // e0.false = newlabel()
-        e0->l_false = this->new_label();
-        // e1.true = expr.true
-        e1->l_true = attrs->l_true;
-        // e1.false = expr.false
-        e1->l_false = attrs->l_false;
-
-        // this->put_node_attrs(ctx, attrs);
-        this->put_node_attrs(ctx->children[0], e0);
-        this->put_node_attrs(ctx->children[2], e1);
-    }
+    // this->put_node_attrs(ctx, attrs);
+    this->put_node_attrs(ctx->children[0], e0);
+    this->put_node_attrs(ctx->children[2], e1);
 }
-
-/**
- * expression cond_op expression
- * 
- * Both expression must be of type bool.
- * 
- * cond_op = {'&&', '||'}
- */
-void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
+void SymbolTableListener::exitExpr_cond_and(DecafParser::Expr_cond_andContext *ctx)
 {
     std::vector<DecafParser::ExpressionContext *> exprs = ctx->expression();
 
@@ -814,15 +784,93 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
     put_node_type(ctx, T_BOOL);
 
     // icg
-    if (DecafParser::St_ifContext *d =
-            dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
-    {
-        NodeAttrs *attrs = this->get_node_attrs(ctx);
-        NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
-        NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
+    // if (DecafParser::St_ifContext *d =
+    //         dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
+    // {
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
+    NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
 
-        attrs->code = e0->code + e0->j_code + e0->l_false + ":\n" + e1->code + e1->j_code;
+    attrs->code = e0->code + e0->j_code;
+    if (ctx->children[1]->getText() == "||")
+        attrs->code += e0->l_false + ":\n";
+    else
+        attrs->code += e0->l_true + ":\n";
+    attrs->code += e1->code + e1->j_code;
+    // }
+}
+void SymbolTableListener::enterExpr_cond_or(DecafParser::Expr_cond_orContext *ctx)
+{
+    std::cout << "enterExpr_cond ||" << std::endl;
+    NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    NodeAttrs *e0 = new NodeAttrs();
+    NodeAttrs *e1 = new NodeAttrs();
+
+    // e0.true = expr.true
+    e0->l_true = attrs->l_true;
+    // e0.false = newlabel()
+    e0->l_false = this->new_label();
+    // e1.true = expr.true
+    e1->l_true = attrs->l_true;
+    // e1.false = expr.false
+    e1->l_false = attrs->l_false;
+
+    // this->put_node_attrs(ctx, attrs);
+    this->put_node_attrs(ctx->children[0], e0);
+    this->put_node_attrs(ctx->children[2], e1);
+}
+void SymbolTableListener::exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx)
+{
+    std::vector<DecafParser::ExpressionContext *> exprs = ctx->expression();
+
+    int left_type = get_node_type(exprs[0]);
+    if (exprs[0]->children.size() == 1)
+        left_type = get_node_type(exprs[0]->children[0]);
+
+    int right_type = get_node_type(exprs[1]);
+    if (exprs[1]->children.size() == 1)
+        right_type = get_node_type(exprs[1]->children[0]);
+
+    if (left_type != T_BOOL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = exprs[0]->getText() + " must be of type 'BOOL', '";
+        msg += DataTypes::get_instance()->get_type(left_type) + "' found.";
+        print_error(msg, ctx->start->getLine());
+
+        return;
     }
+
+    if (right_type != T_BOOL)
+    {
+        put_node_type(ctx, T_ERROR);
+
+        std::string msg = exprs[1]->getText() + " must be of type 'BOOL', '";
+        msg += DataTypes::get_instance()->get_type(right_type) + "' found.";
+        print_error(msg, ctx->start->getLine());
+
+        return;
+    }
+
+    put_node_type(ctx, T_BOOL);
+
+    // icg
+    // if (DecafParser::St_ifContext *d =
+    //         dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
+    // {
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
+    NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
+
+    attrs->code = e0->code + e0->j_code;
+    if (ctx->children[1]->getText() == "||")
+        attrs->code += e0->l_false + ":\n";
+    else
+        attrs->code += e0->l_true + ":\n";
+    attrs->code += e1->code + e1->j_code;
+    // }
 }
 
 /**

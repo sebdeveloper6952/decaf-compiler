@@ -79,8 +79,10 @@ expression:
 	| '!' expression							# expr_not
 	| expression rel_op expression				# expr_rel
 	| expression eq_op expression				# expr_eq
-	| expression cond_op expression				# expr_cond
-	| '(' expression ')'						# expr_par;
+	// | expression cond_op expression				# expr_cond
+	| expression '&&' expression	# expr_cond_and
+	| expression '||' expression	# expr_cond_or
+	| '(' expression ')'			# expr_par;
 
 methodCall: ID '(' (expression (',' expression)*)? ')';
 

@@ -89,6 +89,9 @@ public:
   virtual void enterExpr_neg(DecafParser::Expr_negContext *ctx) = 0;
   virtual void exitExpr_neg(DecafParser::Expr_negContext *ctx) = 0;
 
+  virtual void enterExpr_cond_or(DecafParser::Expr_cond_orContext *ctx) = 0;
+  virtual void exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx) = 0;
+
   virtual void enterExpr_par(DecafParser::Expr_parContext *ctx) = 0;
   virtual void exitExpr_par(DecafParser::Expr_parContext *ctx) = 0;
 
@@ -97,9 +100,6 @@ public:
 
   virtual void enterExpr_arith_0(DecafParser::Expr_arith_0Context *ctx) = 0;
   virtual void exitExpr_arith_0(DecafParser::Expr_arith_0Context *ctx) = 0;
-
-  virtual void enterExpr_cond(DecafParser::Expr_condContext *ctx) = 0;
-  virtual void exitExpr_cond(DecafParser::Expr_condContext *ctx) = 0;
 
   virtual void enterExpr_method_call(DecafParser::Expr_method_callContext *ctx) = 0;
   virtual void exitExpr_method_call(DecafParser::Expr_method_callContext *ctx) = 0;
@@ -112,6 +112,9 @@ public:
 
   virtual void enterExpr_not(DecafParser::Expr_notContext *ctx) = 0;
   virtual void exitExpr_not(DecafParser::Expr_notContext *ctx) = 0;
+
+  virtual void enterExpr_cond_and(DecafParser::Expr_cond_andContext *ctx) = 0;
+  virtual void exitExpr_cond_and(DecafParser::Expr_cond_andContext *ctx) = 0;
 
   virtual void enterMethodCall(DecafParser::MethodCallContext *ctx) = 0;
   virtual void exitMethodCall(DecafParser::MethodCallContext *ctx) = 0;

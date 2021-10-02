@@ -4,11 +4,7 @@ class Program
 	{
 		int x;
 
-		if (x < 100 || x > 200)
-		{
-			x = 1 + 2;
-		}
-		else
+		if (x < 100 || x > 200  && x < 1000)
 		{
 			x = 0;
 		}

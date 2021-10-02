@@ -462,6 +462,18 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  Expr_cond_orContext : public ExpressionContext {
+  public:
+    Expr_cond_orContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  Expr_parContext : public ExpressionContext {
   public:
     Expr_parContext(ExpressionContext *ctx);
@@ -491,19 +503,6 @@ public:
 
     std::vector<ExpressionContext *> expression();
     ExpressionContext* expression(size_t i);
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  Expr_condContext : public ExpressionContext {
-  public:
-    Expr_condContext(ExpressionContext *ctx);
-
-    std::vector<ExpressionContext *> expression();
-    ExpressionContext* expression(size_t i);
-    Cond_opContext *cond_op();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
@@ -552,6 +551,18 @@ public:
     Expr_notContext(ExpressionContext *ctx);
 
     ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Expr_cond_andContext : public ExpressionContext {
+  public:
+    Expr_cond_andContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
