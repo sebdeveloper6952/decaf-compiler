@@ -448,22 +448,18 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     // L.addr = new Temp
     std::string t1 = this->new_temp();
 
-    // emit(L.addr '=' E.addr * L.type.width)
     NodeAttrs *expr_e = get_node_attrs(expr);
     if (expr->children.size() == 1)
         expr_e = get_node_attrs(expr->children[0]);
     uint width = DataTypes::int_to_width(entry->data_type);
 
-    // emit(new Temp() '=' expression.addr * array.type.width)
     std::string code = expr_e->code;
     code += t1 + "=";
     code += expr_e->value != "" ? expr_e->value : expr_e->addr;
     code += "*" + std::to_string(width) + "\n";
 
-    // emit(new Temp() '=' array.base.addr '+' t1)
     std::string t2 = this->new_temp();
     code += t2 + "=" + std::to_string(entry->offset) + "+" + t1 + "\n";
-    this->emit(code);
 
     put_node_attrs(ctx, entry, t2, code);
     put_node_attrs(ctx->parent, entry, t2, code);
@@ -549,11 +545,9 @@ void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
     // loc_mem.addr = new Temp()
     std::string temp = this->new_temp();
 
-    // emit(loc_mem.addr '=' id.addr + loc.addr)
     std::string addr = entry->is_global ? "g" : "l";
     addr += "[" + temp + "]";
     std::string code = temp + "=" + std::to_string(entry->offset) + "+" + loc_attrs->addr + "\n";
-    this->emit(code);
 
     put_node_attrs(ctx, entry, addr, code);
     put_node_attrs(ctx->parent, entry, addr, code);
@@ -998,7 +992,6 @@ void SymbolTableListener::exitExpr_neg(DecafParser::Expr_negContext *ctx)
         expr_e = get_node_attrs(expr->children[0]);
 
     std::string code = addr + "=-" + expr_e->addr + "\n";
-    this->emit(code);
 
     put_node_attrs(ctx, NULL, addr, code);
 }
@@ -1123,10 +1116,8 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     NodeAttrs *loc_attrs = this->get_node_attrs(loc);
     NodeAttrs *expr_attrs = this->get_node_attrs(expr);
 
-    // emit(loc.addr '=' expr.addr)
     std::string code = loc_attrs->code + expr_attrs->code;
     code += loc_attrs->addr + "=" + expr_attrs->addr + "\n";
-    this->emit(code);
 
     assign_attrs->addr = loc_attrs->addr;
     assign_attrs->code = code;
@@ -1223,10 +1214,6 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
 
     // s.next
     attrs->code += attrs->l_next + ": \n";
-
-    // this->emit("if " + expr_attrs->addr + " goto " + expr_attrs->l_true);
-    // this->emit("goto " + expr_attrs->l_false);
-    // this->emit(expr_attrs->l_true + ":");
 }
 
 void SymbolTableListener::enterSt_while(DecafParser::St_whileContext *ctx)
