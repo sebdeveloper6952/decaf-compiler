@@ -50,8 +50,12 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
 
     std::cout << "\n[INFO] program is valid ✅" << std::endl;
 
-    // for (std::string line : this->vec_code)
-    // std::cout << line << std::endl;
+    for (auto child : ctx->children)
+    {
+        auto a = this->get_node_attrs(child);
+        if (a != NULL)
+            std::cout << a->code << std::endl;
+    }
 }
 
 // Enter a new block
@@ -102,7 +106,6 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
         if (n != NULL)
             attrs->code += n->code;
     }
-    std::cout << attrs->code << std::endl;
 }
 
 /// ---------------------------------------- Var Declarations ----------------------------------------
@@ -591,6 +594,15 @@ void SymbolTableListener::enterMethodDeclaration(DecafParser::MethodDeclarationC
 
 void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationContext *ctx)
 {
+    NodeAttrs *attrs = new NodeAttrs();
+    NodeAttrs *block_attrs = this->get_node_attrs(ctx->block());
+
+    // new method label
+    attrs->addr = this->new_method_label(ctx->ID()->getText());
+
+    attrs->code = attrs->addr + ":\n" + block_attrs->code;
+    this->put_node_attrs(ctx, attrs);
+    this->put_node_attrs(ctx->parent, attrs);
 }
 /// -----------------------------------------------------------------------------------------------------
 
@@ -681,6 +693,18 @@ void SymbolTableListener::exitExpr_arith_1(DecafParser::Expr_arith_1Context *ctx
 
 void SymbolTableListener::enterExpr_rel(DecafParser::Expr_relContext *ctx)
 {
+    // if (DecafParser::St_ifContext *d =
+    //         dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
+    // {
+    //     std::cout << "enterExpr_rel" << std::endl;
+    //     NodeAttrs *attrs = this->get_node_attrs(ctx->parent);
+    //     NodeAttrs *expr_attrs = new NodeAttrs();
+    //     expr_attrs->l_true = this->new_label();
+    //     expr_attrs->l_false = attrs->l_next;
+    //     if (d->block().size() > 1)
+    //         expr_attrs->l_false = this->new_label();
+    //     this->put_node_attrs(ctx, expr_attrs);
+    // }
 }
 
 void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
@@ -716,12 +740,42 @@ void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
 
 void SymbolTableListener::enterExpr_cond(DecafParser::Expr_condContext *ctx)
 {
+    if (DecafParser::St_ifContext *d =
+            dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
+    {
+        std::cout << "enterExpr_cond" << std::endl;
+        NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
+        // NodeAttrs *attrs = new NodeAttrs();
+        NodeAttrs *attrs = this->get_node_attrs(ctx);
+        NodeAttrs *e0 = new NodeAttrs();
+        NodeAttrs *e1 = new NodeAttrs();
+
+        // expr.true = newlabel()
+        // attrs->l_true = this->new_label();
+        // expr.false = parent.next
+        // attrs->l_false = parent_attrs->l_next;
+
+        // e0.true = expr.true
+        e0->l_true = attrs->l_true;
+        // e0.false = newlabel()
+        e0->l_false = this->new_label();
+        // e1.true = expr.true
+        e1->l_true = attrs->l_true;
+        // e1.false = expr.false
+        e1->l_false = attrs->l_false;
+
+        // this->put_node_attrs(ctx, attrs);
+        this->put_node_attrs(ctx->children[0], e0);
+        this->put_node_attrs(ctx->children[2], e1);
+    }
 }
 
 /**
  * expression cond_op expression
  * 
  * Both expression must be of type bool.
+ * 
+ * cond_op = {'&&', '||'}
  */
 void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
 {
@@ -758,6 +812,17 @@ void SymbolTableListener::exitExpr_cond(DecafParser::Expr_condContext *ctx)
     }
 
     put_node_type(ctx, T_BOOL);
+
+    // icg
+    if (DecafParser::St_ifContext *d =
+            dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
+    {
+        NodeAttrs *attrs = this->get_node_attrs(ctx);
+        NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
+        NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
+
+        attrs->code = e0->code + e0->j_code + e0->l_false + ":\n" + e1->code + e1->j_code;
+    }
 }
 
 /**
@@ -1025,29 +1090,38 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     this->put_node_attrs(ctx, assign_attrs);
 }
 
+/**
+ * if (expression) block else block
+ */
 void SymbolTableListener::enterSt_if(DecafParser::St_ifContext *ctx)
 {
-    // icg
+    // S
     NodeAttrs *attrs = new NodeAttrs();
     attrs->l_next = this->new_label();
     this->put_node_attrs(ctx, attrs);
 
+    // expr
     NodeAttrs *expr_attrs = new NodeAttrs();
+    // expr.true = newlabel()
     expr_attrs->l_true = this->new_label();
+    // expr.false = s.next
     expr_attrs->l_false = attrs->l_next;
-    if (ctx->block().size() > 1)
-        expr_attrs->l_false = this->new_label();
     this->put_node_attrs(ctx->expression(), expr_attrs);
 
-    // block attributes
+    // block1
     NodeAttrs *if_block_attrs = new NodeAttrs();
+    // s1.next = s.next
     if_block_attrs->l_next = attrs->l_next;
     this->put_node_attrs(ctx->block()[0], if_block_attrs);
 
     // if an else block exists
     if (ctx->block().size() > 1)
     {
+        // expr.false = newlabel()
+        expr_attrs->l_false = this->new_label();
+
         NodeAttrs *else_block_attrs = new NodeAttrs();
+        // s2.next = s.next
         else_block_attrs->l_next = attrs->l_next;
         this->put_node_attrs(ctx->block()[1], else_block_attrs);
     }
@@ -1087,6 +1161,7 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
 
     // if expr goto expr.true
     attrs->code = expr_attrs->code;
+    attrs->code += expr_attrs->j_code;
 
     // label(expr.true)
     attrs->code += expr_attrs->l_true + ":\n";
@@ -1333,7 +1408,12 @@ std::string SymbolTableListener::new_temp()
 
 std::string SymbolTableListener::new_label()
 {
-    return "l" + std::to_string(++this->label_count);
+    return "l_" + std::to_string(++this->label_count);
+}
+
+std::string SymbolTableListener::new_method_label(std::string extra)
+{
+    return "l_" + extra;
 }
 
 void SymbolTableListener::print_error(std::string msg, size_t line_num)
@@ -1371,19 +1451,9 @@ void SymbolTableListener::gen_code_expr(DecafParser::ExpressionContext *ctx)
     // save code
     attrs->code += n0->code + n1->code;
     attrs->code += attrs->addr + "=" + expr_0 + ctx->children[1]->getText() + expr_1 + "\n";
-    this->emit(attrs->code);
 
-    if (DecafParser::St_ifContext *d =
-            dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
-    {
-        NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
-
-        attrs->code += "if " + attrs->addr + " goto " + attrs->l_true + "\n";
-        attrs->code += "goto " + attrs->l_false + "\n";
-    }
-}
-
-void SymbolTableListener::gen_code_bool_expr(DecafParser::ExpressionContext *ctx)
-{
-    std::cout << "generate jumping code" << std::endl;
+    // jumping code
+    // NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
+    attrs->j_code = "if " + attrs->addr + " goto " + attrs->l_true + "\n";
+    attrs->j_code += "goto " + attrs->l_false + "\n";
 }

@@ -28,7 +28,6 @@ private:
     void process_arith_expr(DecafParser::ExpressionContext *ctx);
     void print_error(std::string msg, size_t line_num);
     void gen_code_expr(DecafParser::ExpressionContext *ctx);
-    void gen_code_bool_expr(DecafParser::ExpressionContext *ctx);
 
 public:
     SymbolTableListener(SymbolTable *table);
@@ -120,5 +119,6 @@ public:
     NodeAttrs *get_node_attrs(antlr4::tree::ParseTree *node);
     std::string new_temp();
     std::string new_label();
+    std::string new_method_label(std::string);
     void emit(std::string code);
 };
