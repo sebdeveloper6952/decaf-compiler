@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "antlr4-runtime/antlr4-runtime.h"
 #include "DecafLexer.h"
@@ -10,6 +11,7 @@
 #include "SymbolTable.h"
 #include "SymbolTableListener.h"
 #include "DataTypes.h"
+#include "IcgInstr.h"
 
 using namespace antlr4;
 
@@ -41,11 +43,16 @@ int main(int argc, const char *argv[])
     SymbolTable *table = new SymbolTable(NULL, "global");
 
     // walk the tree
-    SymbolTableListener st_listener(table);
+    std::vector<IcgInstr *> instrs;
+    SymbolTableListener st_listener(table, &instrs);
     tree::ParseTreeWalker::DEFAULT.walk(&st_listener, tree);
 
-    // TODO: remove
-    // table->print_table();
+    // intermmediate code
+    std::cout << "icg instructions: " << std::endl;
+    for (auto i : instrs)
+    {
+        std::cout << "|op: " << std::to_string(i->op_code) << "|a0: " << i->a0 << "|a1: " << i->a1 << "|res: " << i->res << "|" << std::endl;
+    }
 
     return 0;
 }

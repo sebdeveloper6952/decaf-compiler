@@ -1,10 +1,12 @@
 #pragma once
 
 #include <stack>
+#include <vector>
 #include "antlr4-runtime.h"
 #include "DecafBaseListener.h"
 #include "SymbolTable.h"
 #include "NodeAttrs.h"
+#include "IcgInstr.h"
 
 /**
  * This class provides an empty implementation of DecafListener,
@@ -15,6 +17,7 @@ class SymbolTableListener : public DecafBaseListener
 {
 private:
     SymbolTable *table;
+    std::vector<IcgInstr *> *instrs;
     size_t num_tables = 0;
     bool is_main_valid;
     antlr4::tree::ParseTreeProperty<int> node_types;
@@ -30,7 +33,7 @@ private:
     void gen_code_expr(DecafParser::ExpressionContext *ctx);
 
 public:
-    SymbolTableListener(SymbolTable *table);
+    SymbolTableListener(SymbolTable *table, std::vector<IcgInstr *> *instrs);
 
     // class Program
     void enterProgram(DecafParser::ProgramContext *ctx);

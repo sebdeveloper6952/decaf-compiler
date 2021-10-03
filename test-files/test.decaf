@@ -1,14 +1,13 @@
 class Program
 {
-	int add(int x, int y)
-	{
-		return x + y;
-	}
+	struct A {int a; int b; int c;};
 
 	void main()
 	{
 		int x;
-		
-		x = add(1, 2);
+		int y;
+		struct A s;
+
+		x = s.b + s.c;
 	}
 }
