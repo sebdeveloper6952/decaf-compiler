@@ -57,6 +57,7 @@ public:
     void enterSt_while(DecafParser::St_whileContext *ctx);
     void exitSt_while(DecafParser::St_whileContext *ctx);
     void exitSt_return(DecafParser::St_returnContext *ctx);
+    void exitSt_method_call(DecafParser::St_method_callContext *ctx);
 
     // location
     void exitLoc_var(DecafParser::Loc_varContext *ctx);
@@ -84,12 +85,10 @@ public:
     void enterExpr_rel(DecafParser::Expr_relContext *ctx);
     void exitExpr_rel(DecafParser::Expr_relContext *ctx);
 
-    // void enterExpr_cond(DecafParser::Expr_condContext *ctx);
-    // void exitExpr_cond(DecafParser::Expr_condContext *ctx);
-    void enterExpr_cond_and(DecafParser::Expr_cond_andContext * /*ctx*/);
-    void exitExpr_cond_and(DecafParser::Expr_cond_andContext * /*ctx*/);
-    void enterExpr_cond_or(DecafParser::Expr_cond_orContext * /*ctx*/);
-    void exitExpr_cond_or(DecafParser::Expr_cond_orContext * /*ctx*/);
+    void enterExpr_cond_and(DecafParser::Expr_cond_andContext *ctx);
+    void exitExpr_cond_and(DecafParser::Expr_cond_andContext *ctx);
+    void enterExpr_cond_or(DecafParser::Expr_cond_orContext *ctx);
+    void exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx);
 
     void exitExpr_not(DecafParser::Expr_notContext *ctx);
     void enterExpr_eq(DecafParser::Expr_eqContext *ctx);

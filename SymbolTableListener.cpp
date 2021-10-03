@@ -100,6 +100,7 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
         this->put_node_attrs(ctx, attrs);
     }
 
+    // icg code accumulation
     for (auto child : ctx->children)
     {
         auto n = get_node_attrs(child);
@@ -658,6 +659,26 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
             return;
         }
     }
+
+    // icg
+    NodeAttrs *attrs = new NodeAttrs();
+    for (auto param : ctx->expression())
+    {
+        auto p_attrs = this->get_node_attrs(param);
+        if (p_attrs != NULL)
+        {
+            attrs->code += "param ";
+            attrs->code += p_attrs->value != "" ? p_attrs->value : p_attrs->addr;
+            attrs->code += "\n";
+        }
+    }
+    if (e->data_type != T_VOID)
+    {
+        attrs->addr = this->new_temp();
+        attrs->code += attrs->addr + "=";
+    }
+    attrs->code += "call " + e->id + "," + std::to_string(e->m_params.size()) + "\n";
+    this->put_node_attrs(ctx, attrs);
 }
 
 /// -----------------------------------------------------------------------------------------------------
@@ -985,7 +1006,13 @@ void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callCont
         std::string msg = "method '" + ctx->methodCall()->ID()->getText() + "' has return type of 'void',";
         msg += " not allowed in an expression.";
         print_error(msg, ctx->start->getLine());
+
+        return;
     }
+
+    // icg
+    NodeAttrs *child_attrs = this->get_node_attrs(ctx->methodCall());
+    this->put_node_attrs(ctx, child_attrs);
 }
 
 /**
@@ -1381,6 +1408,14 @@ void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
     }
 
     put_node_type(ctx, return_type);
+}
+
+void SymbolTableListener::exitSt_method_call(DecafParser::St_method_callContext *ctx)
+{
+    std::cout << "exitSt_method_call" << std::endl;
+    NodeAttrs *child_attrs = this->get_node_attrs(ctx->methodCall());
+    this->put_node_attrs(ctx, child_attrs);
+    std::cout << child_attrs->code << std::endl;
 }
 
 /// --------------------------------------------------------------------------------------------
