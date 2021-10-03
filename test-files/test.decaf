@@ -5,9 +5,10 @@ class Program
 	void main()
 	{
 		int x;
-		int y;
-		struct A s;
 
-		x = s.b + s.c;
+		if (x > 0)
+		{
+			x = 100;
+		}
 	}
 }

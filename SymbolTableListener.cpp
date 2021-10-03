@@ -53,11 +53,12 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
 
     std::cout << "\n[INFO] program is valid ✅" << std::endl;
 
-    for (auto child : ctx->children)
+    for (antlr4::tree::ParseTree *child : ctx->children)
     {
-        auto a = this->get_node_attrs(child);
+        NodeAttrs *a = this->get_node_attrs(child);
         if (a != NULL)
-            std::cout << a->code << std::endl;
+            for (IcgInstr *c : a->l_code)
+                this->instrs->push_back(c);
     }
 }
 
@@ -106,9 +107,13 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
     // icg code accumulation
     for (auto child : ctx->children)
     {
-        auto n = get_node_attrs(child);
+        NodeAttrs *n = this->get_node_attrs(child);
         if (n != NULL)
+        {
             attrs->code += n->code;
+            for (IcgInstr *c : n->l_code)
+                attrs->l_code.push_back(c);
+        }
     }
 }
 
@@ -645,6 +650,14 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     attrs->addr = this->new_method_label(ctx->ID()->getText());
 
     attrs->code = attrs->addr + ":\n" + block_attrs->code;
+    IcgInstr *i0 = new IcgInstr();
+    i0->op_code = OP_LBL;
+    i0->res = attrs->addr;
+    attrs->l_code.push_back(i0);
+
+    for (IcgInstr *c : block_attrs->l_code)
+        attrs->l_code.push_back(c);
+
     this->put_node_attrs(ctx, attrs);
     this->put_node_attrs(ctx->parent, attrs);
 }
@@ -1319,11 +1332,22 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     attrs->code = expr_attrs->code;
     attrs->code += expr_attrs->j_code;
 
+    for (IcgInstr *c : expr_attrs->l_code)
+        attrs->l_code.push_back(c);
+    for (IcgInstr *c : expr_attrs->lj_code)
+        attrs->l_code.push_back(c);
+
     // label(expr.true)
     attrs->code += expr_attrs->l_true + ":\n";
+    IcgInstr *i0 = new IcgInstr();
+    i0->op_code = OP_LBL;
+    i0->res = expr_attrs->l_true;
+    attrs->l_code.push_back(i0);
 
     // s1.code
     attrs->code += if_block_attrs->code;
+    for (IcgInstr *c : if_block_attrs->l_code)
+        attrs->l_code.push_back(c);
 
     // if an else block exists
     if (ctx->block().size() > 1)
@@ -1332,10 +1356,27 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
         attrs->code += "goto " + attrs->l_next + "\n";
         attrs->code += expr_attrs->l_false + ":\n";
         attrs->code += else_block_attrs->code;
+
+        IcgInstr *i1 = new IcgInstr();
+        i1->op_code = OP_GOTO;
+        i1->res = expr_attrs->l_next;
+        attrs->l_code.push_back(i1);
+
+        IcgInstr *i2 = new IcgInstr();
+        i2->op_code = OP_LBL;
+        i2->res = expr_attrs->l_false;
+        attrs->l_code.push_back(i2);
+
+        for (IcgInstr *c : else_block_attrs->l_code)
+            attrs->l_code.push_back(c);
     }
 
     // s.next
     attrs->code += attrs->l_next + ": \n";
+    IcgInstr *i3 = new IcgInstr();
+    i3->op_code = OP_LBL;
+    i3->res = attrs->l_next;
+    attrs->l_code.push_back(i3);
 }
 
 void SymbolTableListener::enterSt_while(DecafParser::St_whileContext *ctx)
