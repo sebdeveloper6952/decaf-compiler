@@ -798,6 +798,11 @@ void SymbolTableListener::enterExpr_cond_or(DecafParser::Expr_cond_orContext *ct
     NodeAttrs *e0 = new NodeAttrs();
     NodeAttrs *e1 = new NodeAttrs();
 
+    if (attrs == NULL)
+    {
+        std::cout << "attrs NULL" << std::endl;
+    }
+
     // e0.true = expr.true
     e0->l_true = attrs->l_true;
     // e0.false = newlabel()
@@ -889,6 +894,30 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
     }
 
     put_node_type(ctx, T_BOOL);
+
+    // intermediate code generation
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    if (attrs == NULL)
+    {
+        attrs = new NodeAttrs();
+        this->put_node_attrs(ctx, attrs);
+    }
+    attrs->addr = this->new_temp();
+
+    // e.addr = e0.addr OP e1.addr
+    NodeAttrs *n0 = this->get_node_attrs(ctx->expression());
+    if (ctx->expression()->children.size() == 1)
+        n0 = this->get_node_attrs(ctx->expression()->children[0]);
+
+    std::string expr_0 = n0->value != "" ? n0->value : n0->addr;
+
+    // save code
+    attrs->code += n0->code;
+    attrs->code += attrs->addr + "=!" + expr_0 + "\n";
+
+    // jumping code
+    attrs->j_code = "if " + attrs->addr + " goto " + attrs->l_true + "\n";
+    attrs->j_code += "goto " + attrs->l_false + "\n";
 }
 
 /**
@@ -929,6 +958,9 @@ void SymbolTableListener::exitExpr_eq(DecafParser::Expr_eqContext *ctx)
     }
 
     put_node_type(ctx, T_BOOL);
+
+    // intermediate code generation
+    this->gen_code_expr(ctx);
 }
 
 void SymbolTableListener::exitExpr_method_call(DecafParser::Expr_method_callContext *ctx)
@@ -1009,6 +1041,10 @@ void SymbolTableListener::exitExpr_par(DecafParser::Expr_parContext *ctx)
     if (expr->children.size() == 1)
         expr_type = get_node_type(expr->children[0]);
     put_node_type(ctx, expr_type);
+
+    // icg
+    NodeAttrs *child_attrs = this->get_node_attrs(ctx->expression());
+    this->put_node_attrs(ctx, child_attrs);
 }
 
 void SymbolTableListener::exitExpr_loc(DecafParser::Expr_locContext *ctx)

@@ -2,7 +2,8 @@ class Program
 {
 	void main()
 	{
-		bool a;
-		a = 1 > 2 || 1 < 500;
+		int x;
+
+		x = (1 + 2);
 	}
 }
