@@ -25,6 +25,7 @@
 #define OP_RET 19
 #define OP_ASGN 20
 #define OP_LBL 21
+#define OP_EBL 22
 
 class IcgInstr
 {

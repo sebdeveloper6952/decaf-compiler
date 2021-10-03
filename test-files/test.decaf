@@ -6,9 +6,9 @@ class Program
 	{
 		int x;
 
-		if (x > 0)
+		while (x < 100)
 		{
-			x = 100;
+			x = x + 1;
 		}
 	}
 }

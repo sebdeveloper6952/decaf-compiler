@@ -57,8 +57,11 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
     {
         NodeAttrs *a = this->get_node_attrs(child);
         if (a != NULL)
+        {
+            std::cout << a->code << std::endl;
             for (IcgInstr *c : a->l_code)
                 this->instrs->push_back(c);
+        }
     }
 }
 
@@ -1434,6 +1437,16 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     s_attrs->code += expr_attrs->l_true + ":\n";
     s_attrs->code += block_attrs->code;
     s_attrs->code += "goto " + s_attrs->l_begin;
+
+    s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_begin));
+    for (IcgInstr *c : expr_attrs->l_code)
+        s_attrs->l_code.push_back(c);
+    for (IcgInstr *c : expr_attrs->lj_code)
+        s_attrs->l_code.push_back(c);
+    s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
+    for (IcgInstr *c : block_attrs->l_code)
+        s_attrs->l_code.push_back(c);
+    s_attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", s_attrs->l_begin));
 }
 
 void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
