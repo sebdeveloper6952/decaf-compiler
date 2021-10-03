@@ -6,7 +6,7 @@ class Program
 	{
 		int x;
 
-		while (x < 100)
+		if (x < 100 && x > 1000)
 		{
 			x = x + 1;
 		}

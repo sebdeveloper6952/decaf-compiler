@@ -808,7 +808,6 @@ void SymbolTableListener::exitExpr_rel(DecafParser::Expr_relContext *ctx)
 
 void SymbolTableListener::enterExpr_cond_and(DecafParser::Expr_cond_andContext *ctx)
 {
-    std::cout << "enterExpr_cond &&" << std::endl;
     NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
     NodeAttrs *attrs = this->get_node_attrs(ctx);
     NodeAttrs *e0 = new NodeAttrs();
@@ -870,15 +869,23 @@ void SymbolTableListener::exitExpr_cond_and(DecafParser::Expr_cond_andContext *c
     NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
 
     attrs->code = e0->code + e0->j_code;
-    if (ctx->children[1]->getText() == "||")
-        attrs->code += e0->l_false + ":\n";
-    else
-        attrs->code += e0->l_true + ":\n";
+    attrs->code += e0->l_true + ":\n";
     attrs->code += e1->code + e1->j_code;
+
+    for (IcgInstr *c : e0->l_code)
+        attrs->l_code.push_back(c);
+    for (IcgInstr *c : e0->lj_code)
+        attrs->l_code.push_back(c);
+
+    attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", e0->l_true));
+
+    for (IcgInstr *c : e1->l_code)
+        attrs->l_code.push_back(c);
+    for (IcgInstr *c : e1->lj_code)
+        attrs->l_code.push_back(c);
 }
 void SymbolTableListener::enterExpr_cond_or(DecafParser::Expr_cond_orContext *ctx)
 {
-    std::cout << "enterExpr_cond ||" << std::endl;
     NodeAttrs *parent_attrs = this->get_node_attrs(ctx->parent);
     NodeAttrs *attrs = this->get_node_attrs(ctx);
     NodeAttrs *e0 = new NodeAttrs();
@@ -946,11 +953,21 @@ void SymbolTableListener::exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx
     NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
 
     attrs->code = e0->code + e0->j_code;
-    if (ctx->children[1]->getText() == "||")
-        attrs->code += e0->l_false + ":\n";
-    else
-        attrs->code += e0->l_true + ":\n";
+
+    for (IcgInstr *c : e0->l_code)
+        attrs->l_code.push_back(c);
+    for (IcgInstr *c : e0->lj_code)
+        attrs->l_code.push_back(c);
+
+    attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", e0->l_false));
+
+    attrs->code += e0->l_false + ":\n";
     attrs->code += e1->code + e1->j_code;
+
+    for (IcgInstr *c : e1->l_code)
+        attrs->l_code.push_back(c);
+    for (IcgInstr *c : e1->lj_code)
+        attrs->l_code.push_back(c);
 }
 
 /**
