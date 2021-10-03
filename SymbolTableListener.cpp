@@ -651,13 +651,9 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
 
     // new method label
     attrs->addr = this->new_method_label(ctx->ID()->getText());
-
     attrs->code = attrs->addr + ":\n" + block_attrs->code;
-    IcgInstr *i0 = new IcgInstr();
-    i0->op_code = OP_LBL;
-    i0->res = attrs->addr;
-    attrs->l_code.push_back(i0);
 
+    attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->addr));
     for (IcgInstr *c : block_attrs->l_code)
         attrs->l_code.push_back(c);
 
@@ -735,14 +731,25 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
             attrs->code += "param ";
             attrs->code += p_attrs->value != "" ? p_attrs->value : p_attrs->addr;
             attrs->code += "\n";
+
+            std::string t = p_attrs->value != "" ? p_attrs->value : p_attrs->addr;
+            attrs->l_code.push_back(new IcgInstr(OP_PARM, t, "", ""));
         }
     }
     if (e->data_type != T_VOID)
     {
         attrs->addr = this->new_temp();
         attrs->code += attrs->addr + "=";
+
+        attrs->l_code.push_back(new IcgInstr(OP_CALL, e->id, "", attrs->addr));
     }
+    else
+    {
+        attrs->l_code.push_back(new IcgInstr(OP_CALL, e->id, "", ""));
+    }
+
     attrs->code += "call " + e->id + "," + std::to_string(e->m_params.size()) + "\n";
+
     this->put_node_attrs(ctx, attrs);
 }
 
@@ -1549,8 +1556,9 @@ void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
         this->put_node_attrs(ctx, attrs);
 
         // return code
-        IcgInstr *i1 = new IcgInstr(OP_RET, ret_expr_attrs->addr, "", "");
-        this->instrs->push_back(i1);
+        for (IcgInstr *c : ret_expr_attrs->l_code)
+            attrs->l_code.push_back(c);
+        attrs->l_code.push_back(new IcgInstr(OP_RET, ret_expr_attrs->addr, "", ""));
     }
 }
 

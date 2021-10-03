@@ -1,14 +1,14 @@
 class Program
 {
-	struct A {int a; int b; int c;};
+	int add(int x, int y)
+	{
+		return x + y;
+	}
 
 	void main()
 	{
 		int x;
 
-		if (x < 100 && x > 1000)
-		{
-			x = x + 1;
-		}
+		x = add(1, 2);
 	}
 }
