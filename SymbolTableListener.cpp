@@ -58,7 +58,6 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
         NodeAttrs *a = this->get_node_attrs(child);
         if (a != NULL)
         {
-            std::cout << a->code << std::endl;
             for (IcgInstr *c : a->l_code)
                 this->instrs->push_back(c);
         }
@@ -656,7 +655,8 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->addr));
     for (IcgInstr *c : block_attrs->l_code)
         attrs->l_code.push_back(c);
-
+    // attrs->l_code.insert(attrs->l_code.end() - 1, new IcgInstr(OP_EFN, "", "", attrs->addr));
+    attrs->l_code.push_back(new IcgInstr(OP_EFN, "", "", attrs->addr));
     this->put_node_attrs(ctx, attrs);
     this->put_node_attrs(ctx->parent, attrs);
 }
@@ -1375,6 +1375,7 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     attrs->code += if_block_attrs->code;
     for (IcgInstr *c : if_block_attrs->l_code)
         attrs->l_code.push_back(c);
+    attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
 
     // if an else block exists
     if (ctx->block().size() > 1)
@@ -1396,14 +1397,12 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
 
         for (IcgInstr *c : else_block_attrs->l_code)
             attrs->l_code.push_back(c);
+        attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
     }
 
     // s.next
     attrs->code += attrs->l_next + ": \n";
-    IcgInstr *i3 = new IcgInstr();
-    i3->op_code = OP_LBL;
-    i3->res = attrs->l_next;
-    attrs->l_code.push_back(i3);
+    attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->l_next));
 }
 
 void SymbolTableListener::enterSt_while(DecafParser::St_whileContext *ctx)
@@ -1470,7 +1469,10 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
     for (IcgInstr *c : block_attrs->l_code)
         s_attrs->l_code.push_back(c);
+    s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
     s_attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", s_attrs->l_begin));
+    s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
+    s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_next));
 }
 
 void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)

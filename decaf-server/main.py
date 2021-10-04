@@ -12,11 +12,15 @@ def api():
 
     command = ["./src/main", data]
     result = subprocess.run(command, capture_output=True, encoding='utf-8')
+    icg = result.stdout.split("__icg__")
 
-    return {
+    data = {
         "message": "Code checked.",
         "data": {
             "lex": result.stderr,
             "sem": result.stdout,
+            "icg": icg[1] if len(icg) > 1 else "error",
         }
     }
+
+    return data

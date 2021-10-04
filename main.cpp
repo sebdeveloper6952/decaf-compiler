@@ -12,6 +12,7 @@
 #include "SymbolTableListener.h"
 #include "DataTypes.h"
 #include "IcgInstr.h"
+#include "IcGen.h"
 
 using namespace antlr4;
 
@@ -19,11 +20,11 @@ int main(int argc, const char *argv[])
 {
     // TODO: validate argv length
     // open file specified.
-    std::ifstream stream;
-    stream.open(argv[1]);
+    // std::ifstream stream;
+    // stream.open(argv[1]);
 
-    // std::stringstream stream;
-    // stream << argv[1];
+    std::stringstream stream;
+    stream << argv[1];
 
     // input stream
     ANTLRInputStream input(stream);
@@ -48,11 +49,10 @@ int main(int argc, const char *argv[])
     tree::ParseTreeWalker::DEFAULT.walk(&st_listener, tree);
 
     // intermmediate code
-    std::cout << "icg instructions: " << std::endl;
-    for (auto i : instrs)
-    {
-        std::cout << "|op: " << std::to_string(i->op_code) << "|a0: " << i->a0 << "|a1: " << i->a1 << "|res: " << i->res << "|" << std::endl;
-    }
+    std::vector<std::string> ic = IcGen::gen_code(instrs);
+    std::cout << "__icg__" << std::endl;
+    for (auto i : ic)
+        std::cout << i;
 
     return 0;
 }

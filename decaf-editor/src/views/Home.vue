@@ -9,12 +9,33 @@
         @click="clearCode"
       ></div>
     </div>
+    <div class="tab-bar">
+      <div
+        class="tab-item"
+        v-for="t in tabs"
+        :key="t.id"
+        @click="changeTab(t.id)"
+      >
+        {{ t.title }}
+      </div>
+    </div>
     <prism-editor
+      v-if="activeTab == 0"
       class="my-editor middle-editor"
       style="height: 50vh"
       v-model="code"
       :highlight="highlighter"
       line-numbers
+      :readonly="activeTab != 0"
+    ></prism-editor>
+    <prism-editor
+      v-if="activeTab == 1"
+      class="my-editor middle-editor"
+      style="height: 50vh"
+      v-model="intermmediateCode"
+      :highlight="highlighter"
+      line-numbers
+      :readonly="activeTab != 0"
     ></prism-editor>
     <prism-editor
       readonly
@@ -191,6 +212,30 @@ $black4: #5c5c5c;
   align-items: center;
 }
 
+.tab-bar {
+  width: 75%;
+  height: 40px;
+  background-color: $black3;
+  border-left: $borderWidth solid $green;
+  border-right: $borderWidth solid $green;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tab-item {
+  flex-grow: 1;
+  height: 100%;
+  cursor: pointer;
+  color: $green;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &:hover {
+    background-color: $black0;
+  }
+}
+
 .top-bar-title {
   flex-grow: 1;
   margin-left: 16px;
@@ -295,7 +340,8 @@ export default {
   },
   data() {
     return {
-      code: "class Program \n{\n\tint a;\n\n\tvoid main()\n\t{\n\t\ta = true;\n\t\t1 + false;\n\t}\n}",
+      code: "class Program \n{\n\tint a;\n\n\tvoid main()\n\t{\n\t\ta = 1;\n\t}\n}",
+      intermmediateCode: "",
       output: "",
       errorLines: [],
       red: "#FF5733",
@@ -307,7 +353,16 @@ export default {
       notificationImg: "",
       // apiUrl: "https://48f7-181-209-150-146.ngrok.io",
       apiUrl: "http://127.0.0.1:8081",
+      activeTab: 0,
+      tabs: [
+        { id: 0, title: "Source Program" },
+        { id: 1, title: "Intermmediate Code" },
+        { id: 2, title: "Assembly (MIPS)" },
+      ],
     };
+  },
+  mounted() {
+    this.topEditorCode = this.code;
   },
   methods: {
     highlighter(code) {
@@ -380,6 +435,7 @@ export default {
 
           this.output = data.data.lex;
           this.output += data.data.sem;
+          this.intermmediateCode = data.data.icg;
         });
     },
     clearCode() {
@@ -397,6 +453,9 @@ export default {
         }.bind(this);
         reader.readAsText(event.target.files[0]);
       }
+    },
+    changeTab(index) {
+      this.activeTab = index;
     },
   },
   computed: {
