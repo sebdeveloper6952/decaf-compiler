@@ -3,13 +3,12 @@
 std::vector<std::string> IcGen::gen_code(std::vector<IcgInstr *> &instrs)
 {
     std::vector<std::string> code;
-    uint tc = 0;
+    bool indent = false;
 
     for (const auto i : instrs)
     {
         std::string c;
-        for (int i = 0; i < tc; i++)
-            c.insert(0, "  ");
+        bool indent = true;
 
         switch (i->op_code)
         {
@@ -73,19 +72,21 @@ std::vector<std::string> IcGen::gen_code(std::vector<IcgInstr *> &instrs)
             c += i->res + " = " + i->a0 + "\n";
             break;
         case OP_LBL:
-            // ++tc;
+            indent = false;
             c += i->res + ":\n";
             break;
         case OP_EBL:
-            // --tc;
             break;
         case OP_EFN:
-            // --tc;
-            c += "end_" + i->res + "\n";
+            c += "\n";
             break;
         default:
             break;
         }
+
+        if (indent)
+            c.insert(0, "  ");
+
         code.push_back(c);
     }
 

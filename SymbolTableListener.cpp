@@ -655,7 +655,6 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->addr));
     for (IcgInstr *c : block_attrs->l_code)
         attrs->l_code.push_back(c);
-    // attrs->l_code.insert(attrs->l_code.end() - 1, new IcgInstr(OP_EFN, "", "", attrs->addr));
     attrs->l_code.push_back(new IcgInstr(OP_EFN, "", "", attrs->addr));
     this->put_node_attrs(ctx, attrs);
     this->put_node_attrs(ctx->parent, attrs);
@@ -727,25 +726,34 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
     {
         auto p_attrs = this->get_node_attrs(param);
         if (p_attrs != NULL)
-        {
-            attrs->code += "param ";
-            attrs->code += p_attrs->value != "" ? p_attrs->value : p_attrs->addr;
-            attrs->code += "\n";
+            attrs->l_code.insert(
+                attrs->l_code.end(),
+                p_attrs->l_code.begin(),
+                p_attrs->l_code.end());
+    }
 
+    for (auto param : ctx->expression())
+    {
+        auto p_attrs = this->get_node_attrs(param);
+        if (p_attrs != NULL)
+        {
             std::string t = p_attrs->value != "" ? p_attrs->value : p_attrs->addr;
             attrs->l_code.push_back(new IcgInstr(OP_PARM, t, "", ""));
         }
     }
+
     if (e->data_type != T_VOID)
     {
         attrs->addr = this->new_temp();
         attrs->code += attrs->addr + "=";
 
-        attrs->l_code.push_back(new IcgInstr(OP_CALL, e->id, "", attrs->addr));
+        attrs->l_code.push_back(
+            new IcgInstr(OP_CALL, e->id, std::to_string(e->m_params.size()), attrs->addr));
     }
     else
     {
-        attrs->l_code.push_back(new IcgInstr(OP_CALL, e->id, "", ""));
+        attrs->l_code.push_back(
+            new IcgInstr(OP_CALL, e->id, std::to_string(e->m_params.size()), ""));
     }
 
     attrs->code += "call " + e->id + "," + std::to_string(e->m_params.size()) + "\n";
@@ -1375,7 +1383,7 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     attrs->code += if_block_attrs->code;
     for (IcgInstr *c : if_block_attrs->l_code)
         attrs->l_code.push_back(c);
-    attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
+    // attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
 
     // if an else block exists
     if (ctx->block().size() > 1)
@@ -1397,7 +1405,7 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
 
         for (IcgInstr *c : else_block_attrs->l_code)
             attrs->l_code.push_back(c);
-        attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
+        // attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
     }
 
     // s.next
@@ -1469,9 +1477,9 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
     for (IcgInstr *c : block_attrs->l_code)
         s_attrs->l_code.push_back(c);
-    s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
+    // s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
     s_attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", s_attrs->l_begin));
-    s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
+    // s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
     s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_next));
 }
 

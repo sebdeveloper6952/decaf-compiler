@@ -20,11 +20,11 @@ int main(int argc, const char *argv[])
 {
     // TODO: validate argv length
     // open file specified.
-    // std::ifstream stream;
-    // stream.open(argv[1]);
+    std::ifstream stream;
+    stream.open(argv[1]);
 
-    std::stringstream stream;
-    stream << argv[1];
+    // std::stringstream stream;
+    // stream << argv[1];
 
     // input stream
     ANTLRInputStream input(stream);

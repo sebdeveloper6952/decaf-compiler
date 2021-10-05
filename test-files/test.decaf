@@ -1,9 +1,22 @@
 class Program
 {
+	int add(int x, int y)
+	{
+		return x + y;
+	}
+
+	int sub(int x, int y)
+	{
+		return x - y;
+	}
+	
 	void main()
 	{
 		int x;
 		
-		x = 1
+		if (x > 100)
+		{
+			x = add(1+1, 2+2);
+		}
 	}
 }
