@@ -119,11 +119,6 @@ public:
     void put_node_attrs(
         antlr4::tree::ParseTree *node,
         NodeAttrs *attrs);
-    void put_node_attrs(
-        antlr4::tree::ParseTree *node,
-        SymbolTableEntry *entry,
-        std::string addr,
-        std::string code);
     NodeAttrs *get_node_attrs(antlr4::tree::ParseTree *node);
     std::string new_temp();
     std::string new_label();

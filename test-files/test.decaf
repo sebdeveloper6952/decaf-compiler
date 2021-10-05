@@ -16,7 +16,7 @@ class Program
 		
 		if (x > 100)
 		{
-			x = add(1+1, 2+2);
+			x = add(1 + 1, 2 + 2);
 		}
 	}
 }

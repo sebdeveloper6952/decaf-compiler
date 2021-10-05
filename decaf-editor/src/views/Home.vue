@@ -15,6 +15,7 @@
         v-for="t in tabs"
         :key="t.id"
         @click="changeTab(t.id)"
+        v-bind:class="{ active: activeTab == t.id }"
       >
         {{ t.title }}
       </div>
@@ -231,6 +232,11 @@ $black4: #5c5c5c;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &.active {
+    background-color: $black0;
+  }
+
   &:hover {
     background-color: $black0;
   }

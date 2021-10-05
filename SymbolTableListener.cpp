@@ -112,7 +112,6 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
         NodeAttrs *n = this->get_node_attrs(child);
         if (n != NULL)
         {
-            attrs->code += n->code;
             for (IcgInstr *c : n->l_code)
                 attrs->l_code.push_back(c);
         }
@@ -342,8 +341,12 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
         put_node_type(ctx->parent, e->data_type);
 
         // icg
-        put_node_attrs(ctx, e, std::to_string(e->offset), "");
-        put_node_attrs(ctx->parent, e, std::to_string(e->offset), "");
+        NodeAttrs *attrs = new NodeAttrs();
+        attrs->entry = e;
+        attrs->addr = std::to_string(e->offset);
+
+        this->put_node_attrs(ctx, attrs);
+        this->put_node_attrs(ctx->parent, attrs);
     }
     else
     {
@@ -360,8 +363,13 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
         // icg
         std::string addr = e->is_global ? "g" : "l";
         addr += "[" + std::to_string(e->offset) + "]";
-        this->put_node_attrs(ctx, e, addr, "");
-        this->put_node_attrs(ctx->parent, e, addr, "");
+
+        NodeAttrs *attrs = new NodeAttrs();
+        attrs->entry = e;
+        attrs->addr = addr;
+
+        this->put_node_attrs(ctx, attrs);
+        this->put_node_attrs(ctx->parent, attrs);
     }
 }
 
@@ -467,11 +475,6 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     // L.addr = new Temp
     std::string t1 = this->new_temp();
 
-    std::string code = expr_e->code;
-    code += t1 + "=";
-    code += expr_e->value != "" ? expr_e->value : expr_e->addr;
-    code += "*" + std::to_string(width) + "\n";
-
     // acc code
     for (auto c : expr_e->l_code)
         attrs->l_code.push_back(c);
@@ -485,7 +488,6 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     attrs->l_code.push_back(i0);
 
     std::string t2 = this->new_temp();
-    code += t2 + "=" + std::to_string(entry->offset) + "+" + t1 + "\n";
 
     // calc offset
     IcgInstr *i1 = new IcgInstr();
@@ -499,7 +501,6 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     attrs->entry = entry;
     attrs->addr = entry->is_global ? "g" : "l";
     attrs->addr += "[" + t2 + "]";
-    attrs->code = code;
 
     this->put_node_attrs(ctx, attrs);
     this->put_node_attrs(ctx->parent, attrs);
@@ -591,7 +592,6 @@ void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
 
     std::string addr = entry->is_global ? "g" : "l";
     addr += "[" + temp + "]";
-    std::string code = temp + "=" + std::to_string(entry->offset) + "+" + loc_attrs->addr + "\n";
 
     IcgInstr *i0 = new IcgInstr();
     i0->op_code = OP_SUM;
@@ -603,7 +603,6 @@ void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
     // save node attributes
     attrs->entry = entry;
     attrs->addr = addr;
-    attrs->code = code;
 
     // point this node to its attributes
     this->put_node_attrs(ctx, attrs);
@@ -650,7 +649,6 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
 
     // new method label
     attrs->addr = this->new_method_label(ctx->ID()->getText());
-    attrs->code = attrs->addr + ":\n" + block_attrs->code;
 
     attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->addr));
     for (IcgInstr *c : block_attrs->l_code)
@@ -745,7 +743,6 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
     if (e->data_type != T_VOID)
     {
         attrs->addr = this->new_temp();
-        attrs->code += attrs->addr + "=";
 
         attrs->l_code.push_back(
             new IcgInstr(OP_CALL, e->id, std::to_string(e->m_params.size()), attrs->addr));
@@ -755,8 +752,6 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
         attrs->l_code.push_back(
             new IcgInstr(OP_CALL, e->id, std::to_string(e->m_params.size()), ""));
     }
-
-    attrs->code += "call " + e->id + "," + std::to_string(e->m_params.size()) + "\n";
 
     this->put_node_attrs(ctx, attrs);
 }
@@ -883,10 +878,6 @@ void SymbolTableListener::exitExpr_cond_and(DecafParser::Expr_cond_andContext *c
     NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
     NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
 
-    attrs->code = e0->code + e0->j_code;
-    attrs->code += e0->l_true + ":\n";
-    attrs->code += e1->code + e1->j_code;
-
     for (IcgInstr *c : e0->l_code)
         attrs->l_code.push_back(c);
     for (IcgInstr *c : e0->lj_code)
@@ -967,17 +958,12 @@ void SymbolTableListener::exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx
     NodeAttrs *e0 = this->get_node_attrs(ctx->children[0]);
     NodeAttrs *e1 = this->get_node_attrs(ctx->children[2]);
 
-    attrs->code = e0->code + e0->j_code;
-
     for (IcgInstr *c : e0->l_code)
         attrs->l_code.push_back(c);
     for (IcgInstr *c : e0->lj_code)
         attrs->l_code.push_back(c);
 
     attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", e0->l_false));
-
-    attrs->code += e0->l_false + ":\n";
-    attrs->code += e1->code + e1->j_code;
 
     for (IcgInstr *c : e1->l_code)
         attrs->l_code.push_back(c);
@@ -1028,14 +1014,6 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
         n0 = this->get_node_attrs(ctx->expression()->children[0]);
 
     std::string expr_0 = n0->value != "" ? n0->value : n0->addr;
-
-    // save code
-    attrs->code += n0->code;
-    attrs->code += attrs->addr + "=!" + expr_0 + "\n";
-
-    // jumping code
-    attrs->j_code = "if " + attrs->addr + " goto " + attrs->l_true + "\n";
-    attrs->j_code += "goto " + attrs->l_false + "\n";
 }
 
 /**
@@ -1140,6 +1118,7 @@ void SymbolTableListener::exitExpr_neg(DecafParser::Expr_negContext *ctx)
     put_node_type(ctx, T_INT);
 
     // icg
+    NodeAttrs *attrs = new NodeAttrs();
     // e.addr = new Temp()
     std::string addr = this->new_temp();
     // e.addr = '-' e1.addr
@@ -1147,9 +1126,8 @@ void SymbolTableListener::exitExpr_neg(DecafParser::Expr_negContext *ctx)
     if (expr->children.size() == 1)
         expr_e = get_node_attrs(expr->children[0]);
 
-    std::string code = addr + "=-" + expr_e->addr + "\n";
-
-    put_node_attrs(ctx, NULL, addr, code);
+    attrs->addr = addr;
+    this->put_node_attrs(ctx, attrs);
 }
 
 /**
@@ -1175,7 +1153,11 @@ void SymbolTableListener::exitExpr_loc(DecafParser::Expr_locContext *ctx)
 {
     NodeAttrs *a = this->get_node_attrs(ctx->children[0]);
     // E.addr = loc.addr
-    this->put_node_attrs(ctx, a->entry, a->addr, a->code);
+    NodeAttrs *attrs = new NodeAttrs();
+    attrs->entry = a->entry;
+    attrs->addr = a->addr;
+    attrs->l_code.insert(attrs->l_code.begin(), a->l_code.begin(), a->l_code.end());
+    this->put_node_attrs(ctx, attrs);
 }
 
 /// ----------------------------------------------------------------------------------------------------
@@ -1220,9 +1202,10 @@ void SymbolTableListener::exitChar_literal(DecafParser::Char_literalContext *ctx
 {
     put_node_type(ctx, T_CHAR);
 
-    put_node_attrs(ctx, NULL, "", "");
-    NodeAttrs *attrs = get_node_attrs(ctx);
+    // icg
+    NodeAttrs *attrs = new NodeAttrs();
     attrs->value = ctx->CHAR()->getText();
+    this->put_node_attrs(ctx, attrs);
 }
 
 void SymbolTableListener::enterBool_literal(DecafParser::Bool_literalContext *ctx)
@@ -1238,9 +1221,10 @@ void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx
 
     put_node_type(ctx, T_BOOL);
 
-    put_node_attrs(ctx, NULL, "", "");
-    NodeAttrs *attrs = get_node_attrs(ctx);
+    // icg
+    NodeAttrs *attrs = new NodeAttrs();
     attrs->value = ctx->TRUE() != NULL ? "TRUE" : "FALSE";
+    this->put_node_attrs(ctx, attrs);
 }
 /// ---------------------------------------- Finish Literals ----------------------------------------
 
@@ -1276,9 +1260,6 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     NodeAttrs *loc_attrs = this->get_node_attrs(loc);
     NodeAttrs *expr_attrs = this->get_node_attrs(expr);
 
-    std::string code = loc_attrs->code + expr_attrs->code;
-    code += loc_attrs->addr + "=" + expr_attrs->addr + "\n";
-
     for (IcgInstr *c : loc_attrs->l_code)
         assign_attrs->l_code.push_back(c);
     for (IcgInstr *c : expr_attrs->l_code)
@@ -1288,9 +1269,8 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     i0->a0 = expr_attrs->addr;
     i0->res = loc_attrs->addr;
     assign_attrs->l_code.push_back(i0);
-
     assign_attrs->addr = loc_attrs->addr;
-    assign_attrs->code = code;
+
     this->put_node_attrs(ctx, assign_attrs);
 }
 
@@ -1363,24 +1343,18 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     NodeAttrs *expr_attrs = this->get_node_attrs(expr);
     NodeAttrs *if_block_attrs = this->get_node_attrs(ctx->block()[0]);
 
-    // if expr goto expr.true
-    attrs->code = expr_attrs->code;
-    attrs->code += expr_attrs->j_code;
-
     for (IcgInstr *c : expr_attrs->l_code)
         attrs->l_code.push_back(c);
     for (IcgInstr *c : expr_attrs->lj_code)
         attrs->l_code.push_back(c);
 
     // label(expr.true)
-    attrs->code += expr_attrs->l_true + ":\n";
     IcgInstr *i0 = new IcgInstr();
     i0->op_code = OP_LBL;
     i0->res = expr_attrs->l_true;
     attrs->l_code.push_back(i0);
 
     // s1.code
-    attrs->code += if_block_attrs->code;
     for (IcgInstr *c : if_block_attrs->l_code)
         attrs->l_code.push_back(c);
     // attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
@@ -1389,9 +1363,6 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     if (ctx->block().size() > 1)
     {
         NodeAttrs *else_block_attrs = this->get_node_attrs(ctx->block()[1]);
-        attrs->code += "goto " + attrs->l_next + "\n";
-        attrs->code += expr_attrs->l_false + ":\n";
-        attrs->code += else_block_attrs->code;
 
         IcgInstr *i1 = new IcgInstr();
         i1->op_code = OP_GOTO;
@@ -1409,7 +1380,6 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
     }
 
     // s.next
-    attrs->code += attrs->l_next + ": \n";
     attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->l_next));
 }
 
@@ -1463,12 +1433,6 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     NodeAttrs *expr_attrs = this->get_node_attrs(ctx->expression());
     NodeAttrs *block_attrs = this->get_node_attrs(ctx->block());
 
-    s_attrs->code = s_attrs->l_begin + ":\n";
-    s_attrs->code += expr_attrs->code + expr_attrs->j_code;
-    s_attrs->code += expr_attrs->l_true + ":\n";
-    s_attrs->code += block_attrs->code;
-    s_attrs->code += "goto " + s_attrs->l_begin;
-
     s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_begin));
     for (IcgInstr *c : expr_attrs->l_code)
         s_attrs->l_code.push_back(c);
@@ -1477,9 +1441,7 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
     for (IcgInstr *c : block_attrs->l_code)
         s_attrs->l_code.push_back(c);
-    // s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
     s_attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", s_attrs->l_begin));
-    // s_attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
     s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_next));
 }
 
@@ -1561,14 +1523,13 @@ void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
     {
         NodeAttrs *ret_expr_attrs = this->get_node_attrs(ctx->expression());
         NodeAttrs *attrs = new NodeAttrs();
-        attrs->code = ret_expr_attrs->code;
-        attrs->code += "return " + ret_expr_attrs->addr;
-        this->put_node_attrs(ctx, attrs);
 
         // return code
         for (IcgInstr *c : ret_expr_attrs->l_code)
             attrs->l_code.push_back(c);
         attrs->l_code.push_back(new IcgInstr(OP_RET, ret_expr_attrs->addr, "", ""));
+
+        this->put_node_attrs(ctx, attrs);
     }
 }
 
@@ -1577,7 +1538,6 @@ void SymbolTableListener::exitSt_method_call(DecafParser::St_method_callContext 
     std::cout << "exitSt_method_call" << std::endl;
     NodeAttrs *child_attrs = this->get_node_attrs(ctx->methodCall());
     this->put_node_attrs(ctx, child_attrs);
-    std::cout << child_attrs->code << std::endl;
 }
 
 /// --------------------------------------------------------------------------------------------
@@ -1675,17 +1635,6 @@ void SymbolTableListener::put_node_attrs(
     this->node_attrs.put(node, attrs);
 }
 
-void SymbolTableListener::put_node_attrs(
-    antlr4::tree::ParseTree *node,
-    SymbolTableEntry *entry,
-    std::string addr,
-    std::string code)
-{
-
-    NodeAttrs *attrs = new NodeAttrs(entry, addr, code, "", "", "");
-    this->node_attrs.put(node, attrs);
-}
-
 NodeAttrs *SymbolTableListener::get_node_attrs(antlr4::tree::ParseTree *node)
 {
     NodeAttrs *attrs = this->node_attrs.get(node);
@@ -1747,14 +1696,6 @@ void SymbolTableListener::gen_code_expr(DecafParser::ExpressionContext *ctx)
 
     // save operator
     attrs->op = ctx->children[1]->getText();
-
-    // save code
-    attrs->code += n0->code + n1->code;
-    attrs->code += attrs->addr + "=" + expr_0 + attrs->op + expr_1 + "\n";
-
-    // jumping code
-    attrs->j_code = "if " + attrs->addr + " goto " + attrs->l_true + "\n";
-    attrs->j_code += "goto " + attrs->l_false + "\n";
 
     // acc code
     for (auto c : n0->l_code)
