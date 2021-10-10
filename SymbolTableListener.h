@@ -94,11 +94,13 @@ public:
     void enterExpr_cond_or(DecafParser::Expr_cond_orContext *ctx);
     void exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx);
 
+    void enterExpr_not(DecafParser::Expr_notContext *ctx);
     void exitExpr_not(DecafParser::Expr_notContext *ctx);
     void enterExpr_eq(DecafParser::Expr_eqContext *ctx);
     void exitExpr_eq(DecafParser::Expr_eqContext *ctx);
     void exitExpr_method_call(DecafParser::Expr_method_callContext *ctx);
     void exitExpr_neg(DecafParser::Expr_negContext *ctx);
+    void enterExpr_par(DecafParser::Expr_parContext *ctx);
     void exitExpr_par(DecafParser::Expr_parContext *ctx);
     void enterExpr_loc(DecafParser::Expr_locContext *ctx);
     void exitExpr_loc(DecafParser::Expr_locContext *ctx);

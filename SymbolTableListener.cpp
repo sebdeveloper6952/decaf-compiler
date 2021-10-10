@@ -972,6 +972,21 @@ void SymbolTableListener::exitExpr_cond_or(DecafParser::Expr_cond_orContext *ctx
         attrs->l_code.push_back(c);
 }
 
+void SymbolTableListener::enterExpr_not(DecafParser::Expr_notContext *ctx)
+{
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    if (attrs == NULL)
+    {
+        attrs = new NodeAttrs();
+        this->put_node_attrs(ctx, attrs);
+    }
+    NodeAttrs *child_attrs = new NodeAttrs();
+    child_attrs->l_true = attrs->l_false;
+    child_attrs->l_false = attrs->l_true;
+    child_attrs->l_next = attrs->l_next;
+    this->put_node_attrs(ctx->expression(), child_attrs);
+}
+
 /**
  * not_op expression
  * 
@@ -1015,9 +1030,10 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
         expr_attrs = this->get_node_attrs(ctx->expression()->children[0]);
 
     attrs->l_code.insert(attrs->l_code.begin(), expr_attrs->l_code.begin(), expr_attrs->l_code.end());
+    attrs->lj_code.insert(attrs->lj_code.begin(), expr_attrs->lj_code.begin(), expr_attrs->lj_code.end());
 
-    std::string expr_0 = expr_attrs->value != "" ? expr_attrs->value : expr_attrs->addr;
-    attrs->l_code.push_back(new IcgInstr(OP_NEG, expr_0, "", attrs->addr));
+    // std::string expr_0 = expr_attrs->value != "" ? expr_attrs->value : expr_attrs->addr;
+    // attrs->l_code.push_back(new IcgInstr(OP_NEG, expr_0, "", attrs->addr));
 }
 
 /**
@@ -1136,6 +1152,21 @@ void SymbolTableListener::exitExpr_neg(DecafParser::Expr_negContext *ctx)
     this->put_node_attrs(ctx, attrs);
 }
 
+void SymbolTableListener::enterExpr_par(DecafParser::Expr_parContext *ctx)
+{
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    if (attrs == NULL)
+    {
+        attrs = new NodeAttrs();
+        this->put_node_attrs(ctx, attrs);
+    }
+    NodeAttrs *child_attrs = new NodeAttrs();
+    child_attrs->l_true = attrs->l_true;
+    child_attrs->l_false = attrs->l_false;
+    child_attrs->l_next = attrs->l_next;
+    this->put_node_attrs(ctx->expression(), child_attrs);
+}
+
 /**
  * Has the form '(' expression ')'
  * 
@@ -1151,14 +1182,15 @@ void SymbolTableListener::exitExpr_par(DecafParser::Expr_parContext *ctx)
     put_node_type(ctx, expr_type);
 
     // icg
-    NodeAttrs *attrs = new NodeAttrs();
-    NodeAttrs *child_attrs = this->get_node_attrs(ctx->expression());
-    // for (auto c : child_attrs->l_code)
-    //     std::cout << c->op_code << " " << c->a0 << "," << c->a1 << "|" << c->res << std::endl;
-    attrs->addr = child_attrs->addr;
-    attrs->l_code.insert(attrs->l_code.begin(), child_attrs->l_code.begin(), child_attrs->l_code.end());
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
 
-    this->put_node_attrs(ctx, attrs);
+    NodeAttrs *child_attrs = this->get_node_attrs(ctx->expression());
+    attrs->addr = child_attrs->addr;
+    // attrs->l_true = child_attrs->l_true;
+    // attrs->l_false = child_attrs->l_false;
+    // attrs->l_next = child_attrs->l_next;
+    attrs->l_code.insert(attrs->l_code.begin(), child_attrs->l_code.begin(), child_attrs->l_code.end());
+    attrs->lj_code.insert(attrs->lj_code.begin(), child_attrs->lj_code.begin(), child_attrs->lj_code.end());
 }
 
 void SymbolTableListener::enterExpr_loc(DecafParser::Expr_locContext *ctx)

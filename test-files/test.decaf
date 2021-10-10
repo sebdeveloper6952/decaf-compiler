@@ -2,11 +2,11 @@ class Program
 {
   void main()
   {
-    bool x;
-    int i;
+    int x;
 
-    x = !(1 > 0);
-
-    i = (1 + 2);
+    if (!true)
+    {
+      x = 0;
+    }
   }
 }
