@@ -486,25 +486,15 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     for (auto c : expr_e->l_code)
         attrs->l_code.push_back(c);
 
-    // calc expr * width
-    IcgInstr *i0 = new IcgInstr();
-    i0->op_code = OP_MUL;
-    i0->a0 = expr_e->value != "" ? expr_e->value : expr_e->addr;
-    i0->a1 = std::to_string(width);
-    i0->res = t1;
-    attrs->l_code.push_back(i0);
+    // calculate array offset = width * index
+    std::string a0 = expr_e->value != "" ? expr_e->value : expr_e->addr;
+    attrs->l_code.push_back(new IcgInstr(OP_MUL, a0, std::to_string(width), t1));
 
+    // calculate array base + offset
     std::string t2 = this->new_temp();
+    attrs->l_code.push_back(new IcgInstr(OP_SUM, std::to_string(entry->offset), t1, t2));
 
-    // calc offset
-    IcgInstr *i1 = new IcgInstr();
-    i1->op_code = OP_SUM;
-    i1->a0 = std::to_string(entry->offset);
-    i1->a1 = t1;
-    i1->res = entry->is_global ? "g" : "l";
-    i1->res += "[" + t2 + "]";
-    attrs->l_code.push_back(i1);
-
+    // array addr
     attrs->entry = entry;
     attrs->addr = entry->is_global ? "g" : "l";
     attrs->addr += "[" + t2 + "]";
@@ -573,6 +563,21 @@ void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
     // icg
     SymbolTableEntry *entry = NULL;
 
+    // this node attributes
+    NodeAttrs *attrs = new NodeAttrs();
+
+    // get location node attrs
+    NodeAttrs *loc_attrs = get_node_attrs(ctx->location());
+
+    // loc_mem.addr = new Temp()
+    std::string new_temp = this->new_temp();
+
+    std::string addr = "";
+
+    // acc location code
+    for (auto c : loc_attrs->l_code)
+        attrs->l_code.push_back(c);
+
     // if parent is a struct
     if (DecafParser::Loc_memberContext *d = dynamic_cast<DecafParser::Loc_memberContext *>(ctx->parent))
     {
@@ -581,35 +586,20 @@ void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
         this->struct_tables.pop();
         entry = this->struct_tables.top()->get(ctx->ID()->getText());
         this->struct_tables.push(temp);
+
+        // if parent is struct, use offset
+        addr += new_temp;
     }
     else
     {
         entry = this->table->get(ctx->ID()->getText());
+
+        addr = entry->is_global ? "g" : "l";
+        addr += "[" + new_temp + "]";
     }
 
-    // icg
-    // this node attributes
-    NodeAttrs *attrs = new NodeAttrs();
-
-    // get location node attrs
-    NodeAttrs *loc_attrs = get_node_attrs(ctx->location());
-
-    // loc_mem.addr = new Temp()
-    std::string temp = this->new_temp();
-
-    std::string addr = entry->is_global ? "g" : "l";
-    addr += "[" + temp + "]";
-
-    // acc location code
-    for (auto c : loc_attrs->l_code)
-        attrs->l_code.push_back(c);
-
-    IcgInstr *i0 = new IcgInstr();
-    i0->op_code = OP_SUM;
-    i0->a0 = std::to_string(entry->offset);
-    i0->a1 = loc_attrs->addr;
-    i0->res = temp;
-    attrs->l_code.push_back(i0);
+    // offset
+    attrs->l_code.push_back(new IcgInstr(OP_SUM, std::to_string(entry->offset), loc_attrs->addr, new_temp));
 
     // save node attributes
     attrs->entry = entry;
@@ -1020,11 +1010,14 @@ void SymbolTableListener::exitExpr_not(DecafParser::Expr_notContext *ctx)
     attrs->addr = this->new_temp();
 
     // e.addr = e0.addr OP e1.addr
-    NodeAttrs *n0 = this->get_node_attrs(ctx->expression());
+    NodeAttrs *expr_attrs = this->get_node_attrs(ctx->expression());
     if (ctx->expression()->children.size() == 1)
-        n0 = this->get_node_attrs(ctx->expression()->children[0]);
+        expr_attrs = this->get_node_attrs(ctx->expression()->children[0]);
 
-    std::string expr_0 = n0->value != "" ? n0->value : n0->addr;
+    attrs->l_code.insert(attrs->l_code.begin(), expr_attrs->l_code.begin(), expr_attrs->l_code.end());
+
+    std::string expr_0 = expr_attrs->value != "" ? expr_attrs->value : expr_attrs->addr;
+    attrs->l_code.push_back(new IcgInstr(OP_NEG, expr_0, "", attrs->addr));
 }
 
 /**
@@ -1133,9 +1126,11 @@ void SymbolTableListener::exitExpr_neg(DecafParser::Expr_negContext *ctx)
     // e.addr = new Temp()
     std::string addr = this->new_temp();
     // e.addr = '-' e1.addr
-    NodeAttrs *expr_e = get_node_attrs(expr);
+    NodeAttrs *expr_e = this->get_node_attrs(expr);
     if (expr->children.size() == 1)
-        expr_e = get_node_attrs(expr->children[0]);
+        expr_e = this->get_node_attrs(expr->children[0]);
+
+    attrs->l_code.push_back(new IcgInstr(OP_MIN, expr_e->addr, "", addr));
 
     attrs->addr = addr;
     this->put_node_attrs(ctx, attrs);
@@ -1156,8 +1151,14 @@ void SymbolTableListener::exitExpr_par(DecafParser::Expr_parContext *ctx)
     put_node_type(ctx, expr_type);
 
     // icg
+    NodeAttrs *attrs = new NodeAttrs();
     NodeAttrs *child_attrs = this->get_node_attrs(ctx->expression());
-    this->put_node_attrs(ctx, child_attrs);
+    // for (auto c : child_attrs->l_code)
+    //     std::cout << c->op_code << " " << c->a0 << "," << c->a1 << "|" << c->res << std::endl;
+    attrs->addr = child_attrs->addr;
+    attrs->l_code.insert(attrs->l_code.begin(), child_attrs->l_code.begin(), child_attrs->l_code.end());
+
+    this->put_node_attrs(ctx, attrs);
 }
 
 void SymbolTableListener::enterExpr_loc(DecafParser::Expr_locContext *ctx)
@@ -1521,12 +1522,6 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
         s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
     }
 
-    // s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_begin));
-    // for (IcgInstr *c : expr_attrs->l_code)
-    //     s_attrs->l_code.push_back(c);
-    // for (IcgInstr *c : expr_attrs->lj_code)
-    //     s_attrs->l_code.push_back(c);
-    // s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
     for (IcgInstr *c : block_attrs->l_code)
         s_attrs->l_code.push_back(c);
     s_attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", s_attrs->l_begin));
@@ -1792,27 +1787,7 @@ void SymbolTableListener::gen_code_expr(DecafParser::ExpressionContext *ctx)
     for (auto c : n1->l_code)
         attrs->l_code.push_back(c);
 
-    // expression code
-    // IcgInstr *i0 = new IcgInstr();
-    // i0->op_code = IcgInstr::op_to_int(attrs->op);
-    // i0->a0 = expr_0;
-    // i0->a1 = expr_1;
-    // i0->res = attrs->addr;
-
     attrs->l_code.push_back(new IcgInstr(IcgInstr::op_to_int(attrs->op), expr_0, expr_1, attrs->addr));
     attrs->lj_code.push_back(new IcgInstr(OP_IF, attrs->addr, "", attrs->l_true));
     attrs->lj_code.push_back(new IcgInstr(OP_GOTO, "", "", attrs->l_false));
-
-    // jumping code
-    // IcgInstr *i1 = new IcgInstr();
-    // i1->op_code = OP_IF;
-    // i1->a0 = attrs->addr;
-    // i1->res = attrs->l_true;
-    // IcgInstr *i2 = new IcgInstr();
-    // i2->op_code = OP_GOTO;
-    // i2->res = attrs->l_false;
-
-    // attrs->l_code.push_back(i0);
-    // attrs->lj_code.push_back(i1);
-    // attrs->lj_code.push_back(i2);
 }
