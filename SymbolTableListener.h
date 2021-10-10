@@ -54,6 +54,7 @@ public:
     void exitBlock(DecafParser::BlockContext *ctx);
 
     // statements
+    void enterSt_assignment(DecafParser::St_assignmentContext *ctx);
     void exitSt_assignment(DecafParser::St_assignmentContext *ctx);
     void enterSt_if(DecafParser::St_ifContext *ctx);
     void exitSt_if(DecafParser::St_ifContext *ctx);
@@ -99,6 +100,7 @@ public:
     void exitExpr_method_call(DecafParser::Expr_method_callContext *ctx);
     void exitExpr_neg(DecafParser::Expr_negContext *ctx);
     void exitExpr_par(DecafParser::Expr_parContext *ctx);
+    void enterExpr_loc(DecafParser::Expr_locContext *ctx);
     void exitExpr_loc(DecafParser::Expr_locContext *ctx);
 
     // literals

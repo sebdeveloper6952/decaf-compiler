@@ -63,7 +63,7 @@ std::vector<std::string> IcGen::gen_code(std::vector<IcgInstr *> &instrs)
         case OP_CALL:
             if (i->res != "")
                 c += i->res + " = ";
-            c += "call " + i->a0 + ", " + i->a1 + "\n";
+            c += "call " + i->a0 + " " + i->a1 + "\n";
             break;
         case OP_RET:
             c += "ret " + i->a0 + "\n";
@@ -77,8 +77,13 @@ std::vector<std::string> IcGen::gen_code(std::vector<IcgInstr *> &instrs)
             break;
         case OP_EBL:
             break;
+        case OP_FN:
+            indent = false;
+            c += "fn " + i->res + ":\n";
+            break;
         case OP_EFN:
-            c += "\n";
+            indent = false;
+            c += "endfn " + i->res + "\n\n";
             break;
         default:
             break;

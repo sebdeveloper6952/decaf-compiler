@@ -39,6 +39,15 @@
       :readonly="activeTab != 0"
     ></prism-editor>
     <prism-editor
+      v-if="activeTab == 2"
+      class="my-editor middle-editor"
+      style="height: 50vh"
+      v-model="assemblyCode"
+      :highlight="highlighter"
+      line-numbers
+      :readonly="activeTab != 0"
+    ></prism-editor>
+    <prism-editor
       readonly
       class="my-editor bottom-editor"
       style="height: 15vh"
@@ -234,11 +243,13 @@ $black4: #5c5c5c;
   align-items: center;
 
   &.active {
-    background-color: $black0;
+    background-color: $green;
+    color: $black0;
   }
 
   &:hover {
-    background-color: $black0;
+    background-color: $green;
+    color: $black0;
   }
 }
 
@@ -348,6 +359,7 @@ export default {
     return {
       code: "class Program \n{\n\tint a;\n\n\tvoid main()\n\t{\n\t\ta = 1;\n\t}\n}",
       intermmediateCode: "",
+      assemblyCode: "",
       output: "",
       errorLines: [],
       red: "#FF5733",

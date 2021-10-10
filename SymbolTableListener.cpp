@@ -51,7 +51,8 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
     // program is valid
     put_node_type(ctx, T_VOID);
 
-    std::cout << "\n[INFO] program is valid ✅" << std::endl;
+    std::cout << "\n[INFO] program is valid ✅\n"
+              << std::endl;
 
     for (antlr4::tree::ParseTree *child : ctx->children)
     {
@@ -341,7 +342,9 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
         put_node_type(ctx->parent, e->data_type);
 
         // icg
-        NodeAttrs *attrs = new NodeAttrs();
+        NodeAttrs *attrs = this->get_node_attrs(ctx);
+        if (attrs == NULL)
+            attrs = new NodeAttrs();
         attrs->entry = e;
         attrs->addr = std::to_string(e->offset);
 
@@ -364,11 +367,15 @@ void SymbolTableListener::exitLoc_var(DecafParser::Loc_varContext *ctx)
         std::string addr = e->is_global ? "g" : "l";
         addr += "[" + std::to_string(e->offset) + "]";
 
-        NodeAttrs *attrs = new NodeAttrs();
+        NodeAttrs *attrs = this->get_node_attrs(ctx);
+        if (attrs == NULL)
+        {
+            attrs = new NodeAttrs();
+            this->put_node_attrs(ctx, attrs);
+        }
         attrs->entry = e;
         attrs->addr = addr;
 
-        this->put_node_attrs(ctx, attrs);
         this->put_node_attrs(ctx->parent, attrs);
     }
 }
@@ -593,6 +600,10 @@ void SymbolTableListener::exitLoc_member(DecafParser::Loc_memberContext *ctx)
     std::string addr = entry->is_global ? "g" : "l";
     addr += "[" + temp + "]";
 
+    // acc location code
+    for (auto c : loc_attrs->l_code)
+        attrs->l_code.push_back(c);
+
     IcgInstr *i0 = new IcgInstr();
     i0->op_code = OP_SUM;
     i0->a0 = std::to_string(entry->offset);
@@ -650,7 +661,7 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     // new method label
     attrs->addr = this->new_method_label(ctx->ID()->getText());
 
-    attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->addr));
+    attrs->l_code.push_back(new IcgInstr(OP_FN, "", "", attrs->addr));
     for (IcgInstr *c : block_attrs->l_code)
         attrs->l_code.push_back(c);
     attrs->l_code.push_back(new IcgInstr(OP_EFN, "", "", attrs->addr));
@@ -1149,15 +1160,47 @@ void SymbolTableListener::exitExpr_par(DecafParser::Expr_parContext *ctx)
     this->put_node_attrs(ctx, child_attrs);
 }
 
+void SymbolTableListener::enterExpr_loc(DecafParser::Expr_locContext *ctx)
+{
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    // if some ancestor created the attributes, pass them down
+    if (attrs != NULL)
+    {
+        NodeAttrs *child_attrs = new NodeAttrs();
+        child_attrs->l_true = attrs->l_true;
+        child_attrs->l_false = attrs->l_false;
+        child_attrs->l_next = attrs->l_next;
+        this->put_node_attrs(ctx->children[0], child_attrs);
+    }
+}
+
 void SymbolTableListener::exitExpr_loc(DecafParser::Expr_locContext *ctx)
 {
+    // this node attributes
+    NodeAttrs *attrs = this->get_node_attrs(ctx);
+    if (attrs == NULL)
+    {
+        attrs = new NodeAttrs();
+        this->put_node_attrs(ctx, attrs);
+    }
+
+    int node_type = this->get_node_type(ctx->children[0]);
     NodeAttrs *a = this->get_node_attrs(ctx->children[0]);
+
+    // if this location is boolean, we generate its jumping code because some
+    // ancestor node might use it
+    if (node_type == T_BOOL)
+    {
+        std::string new_temp = this->new_temp();
+        a->lj_code.push_back(new IcgInstr(OP_EQ, a->addr, "1", new_temp));
+        a->lj_code.push_back(new IcgInstr(OP_IF, new_temp, "", attrs->l_true));
+        a->lj_code.push_back(new IcgInstr(OP_GOTO, "", "", attrs->l_false));
+    }
+
     // E.addr = loc.addr
-    NodeAttrs *attrs = new NodeAttrs();
     attrs->entry = a->entry;
     attrs->addr = a->addr;
     attrs->l_code.insert(attrs->l_code.begin(), a->l_code.begin(), a->l_code.end());
-    this->put_node_attrs(ctx, attrs);
 }
 
 /// ----------------------------------------------------------------------------------------------------
@@ -1223,12 +1266,22 @@ void SymbolTableListener::exitBool_literal(DecafParser::Bool_literalContext *ctx
 
     // icg
     NodeAttrs *attrs = new NodeAttrs();
-    attrs->value = ctx->TRUE() != NULL ? "TRUE" : "FALSE";
+    attrs->value = ctx->TRUE() != NULL ? "1" : "0";
     this->put_node_attrs(ctx, attrs);
 }
 /// ---------------------------------------- Finish Literals ----------------------------------------
 
 /// ---------------------------------------- Statements ----------------------------------------
+void SymbolTableListener::enterSt_assignment(DecafParser::St_assignmentContext *ctx)
+{
+    antlr4::tree::ParseTree *expr = ctx->expression();
+    if (DecafParser::Expr_relContext *d = dynamic_cast<DecafParser::Expr_relContext *>(expr))
+    {
+        NodeAttrs *attrs = new NodeAttrs();
+        this->put_node_attrs(expr, attrs);
+    }
+}
+
 void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *ctx)
 {
     DecafParser::LocationContext *loc = ctx->location();
@@ -1264,11 +1317,8 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
         assign_attrs->l_code.push_back(c);
     for (IcgInstr *c : expr_attrs->l_code)
         assign_attrs->l_code.push_back(c);
-    IcgInstr *i0 = new IcgInstr();
-    i0->op_code = OP_ASGN;
-    i0->a0 = expr_attrs->addr;
-    i0->res = loc_attrs->addr;
-    assign_attrs->l_code.push_back(i0);
+
+    assign_attrs->l_code.push_back(new IcgInstr(OP_ASGN, expr_attrs->addr, "", loc_attrs->addr));
     assign_attrs->addr = loc_attrs->addr;
 
     this->put_node_attrs(ctx, assign_attrs);
@@ -1349,38 +1399,57 @@ void SymbolTableListener::exitSt_if(DecafParser::St_ifContext *ctx)
         attrs->l_code.push_back(c);
 
     // label(expr.true)
-    IcgInstr *i0 = new IcgInstr();
-    i0->op_code = OP_LBL;
-    i0->res = expr_attrs->l_true;
-    attrs->l_code.push_back(i0);
-
-    // s1.code
-    for (IcgInstr *c : if_block_attrs->l_code)
-        attrs->l_code.push_back(c);
-    // attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
-
-    // if an else block exists
-    if (ctx->block().size() > 1)
+    if (expr_attrs->value != "")
     {
-        NodeAttrs *else_block_attrs = this->get_node_attrs(ctx->block()[1]);
+        if (expr_attrs->value == "1")
+        {
+            // s1.code
+            for (IcgInstr *c : if_block_attrs->l_code)
+                attrs->l_code.push_back(c);
+        }
+        else
+        {
+            NodeAttrs *else_block_attrs = this->get_node_attrs(ctx->block()[1]);
+            if (else_block_attrs != NULL)
+                for (IcgInstr *c : else_block_attrs->l_code)
+                    attrs->l_code.push_back(c);
+        }
+    }
+    else
+    {
+        IcgInstr *i0 = new IcgInstr();
+        i0->op_code = OP_LBL;
+        i0->res = expr_attrs->l_true;
+        attrs->l_code.push_back(i0);
 
-        IcgInstr *i1 = new IcgInstr();
-        i1->op_code = OP_GOTO;
-        i1->res = expr_attrs->l_next;
-        attrs->l_code.push_back(i1);
-
-        IcgInstr *i2 = new IcgInstr();
-        i2->op_code = OP_LBL;
-        i2->res = expr_attrs->l_false;
-        attrs->l_code.push_back(i2);
-
-        for (IcgInstr *c : else_block_attrs->l_code)
+        // s1.code
+        for (IcgInstr *c : if_block_attrs->l_code)
             attrs->l_code.push_back(c);
         // attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
-    }
 
-    // s.next
-    attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->l_next));
+        // if an else block exists
+        if (ctx->block().size() > 1)
+        {
+            NodeAttrs *else_block_attrs = this->get_node_attrs(ctx->block()[1]);
+
+            IcgInstr *i1 = new IcgInstr();
+            i1->op_code = OP_GOTO;
+            i1->res = attrs->l_next;
+            attrs->l_code.push_back(i1);
+
+            IcgInstr *i2 = new IcgInstr();
+            i2->op_code = OP_LBL;
+            i2->res = expr_attrs->l_false;
+            attrs->l_code.push_back(i2);
+
+            for (IcgInstr *c : else_block_attrs->l_code)
+                attrs->l_code.push_back(c);
+            // attrs->l_code.push_back(new IcgInstr(OP_EBL, "", "", ""));
+        }
+
+        // s.next
+        attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", attrs->l_next));
+    }
 }
 
 void SymbolTableListener::enterSt_while(DecafParser::St_whileContext *ctx)
@@ -1429,16 +1498,35 @@ void SymbolTableListener::exitSt_while(DecafParser::St_whileContext *ctx)
     put_node_type(ctx, T_VOID);
 
     // icg
+
     NodeAttrs *s_attrs = this->get_node_attrs(ctx);
     NodeAttrs *expr_attrs = this->get_node_attrs(ctx->expression());
     NodeAttrs *block_attrs = this->get_node_attrs(ctx->block());
 
+    // if there is a dumb while(false) statement
+    if (expr_attrs->value == "0")
+        return;
+
+    // generate the begin label
     s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_begin));
-    for (IcgInstr *c : expr_attrs->l_code)
-        s_attrs->l_code.push_back(c);
-    for (IcgInstr *c : expr_attrs->lj_code)
-        s_attrs->l_code.push_back(c);
-    s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
+
+    // in the case of while (expr) we do generate jumping code
+    // we dont if the case is while(true)
+    if (expr_attrs->value != "1")
+    {
+        for (IcgInstr *c : expr_attrs->l_code)
+            s_attrs->l_code.push_back(c);
+        for (IcgInstr *c : expr_attrs->lj_code)
+            s_attrs->l_code.push_back(c);
+        s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
+    }
+
+    // s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", s_attrs->l_begin));
+    // for (IcgInstr *c : expr_attrs->l_code)
+    //     s_attrs->l_code.push_back(c);
+    // for (IcgInstr *c : expr_attrs->lj_code)
+    //     s_attrs->l_code.push_back(c);
+    // s_attrs->l_code.push_back(new IcgInstr(OP_LBL, "", "", expr_attrs->l_true));
     for (IcgInstr *c : block_attrs->l_code)
         s_attrs->l_code.push_back(c);
     s_attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", s_attrs->l_begin));
@@ -1528,6 +1616,7 @@ void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
         for (IcgInstr *c : ret_expr_attrs->l_code)
             attrs->l_code.push_back(c);
         attrs->l_code.push_back(new IcgInstr(OP_RET, ret_expr_attrs->addr, "", ""));
+        // attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", "next"));
 
         this->put_node_attrs(ctx, attrs);
     }
@@ -1659,7 +1748,7 @@ std::string SymbolTableListener::new_label()
 
 std::string SymbolTableListener::new_method_label(std::string extra)
 {
-    return "l_" + extra;
+    return "_" + extra + "_";
 }
 
 void SymbolTableListener::print_error(std::string msg, size_t line_num)
@@ -1704,22 +1793,26 @@ void SymbolTableListener::gen_code_expr(DecafParser::ExpressionContext *ctx)
         attrs->l_code.push_back(c);
 
     // expression code
-    IcgInstr *i0 = new IcgInstr();
-    i0->op_code = IcgInstr::op_to_int(attrs->op);
-    i0->a0 = expr_0;
-    i0->a1 = expr_1;
-    i0->res = attrs->addr;
+    // IcgInstr *i0 = new IcgInstr();
+    // i0->op_code = IcgInstr::op_to_int(attrs->op);
+    // i0->a0 = expr_0;
+    // i0->a1 = expr_1;
+    // i0->res = attrs->addr;
+
+    attrs->l_code.push_back(new IcgInstr(IcgInstr::op_to_int(attrs->op), expr_0, expr_1, attrs->addr));
+    attrs->lj_code.push_back(new IcgInstr(OP_IF, attrs->addr, "", attrs->l_true));
+    attrs->lj_code.push_back(new IcgInstr(OP_GOTO, "", "", attrs->l_false));
 
     // jumping code
-    IcgInstr *i1 = new IcgInstr();
-    i1->op_code = OP_IF;
-    i1->a0 = attrs->addr;
-    i1->res = attrs->l_true;
-    IcgInstr *i2 = new IcgInstr();
-    i2->op_code = OP_GOTO;
-    i2->res = attrs->l_false;
+    // IcgInstr *i1 = new IcgInstr();
+    // i1->op_code = OP_IF;
+    // i1->a0 = attrs->addr;
+    // i1->res = attrs->l_true;
+    // IcgInstr *i2 = new IcgInstr();
+    // i2->op_code = OP_GOTO;
+    // i2->res = attrs->l_false;
 
-    attrs->l_code.push_back(i0);
-    attrs->lj_code.push_back(i1);
-    attrs->lj_code.push_back(i2);
+    // attrs->l_code.push_back(i0);
+    // attrs->lj_code.push_back(i1);
+    // attrs->lj_code.push_back(i2);
 }

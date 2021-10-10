@@ -1,22 +1,19 @@
-class Program
+class Program 
 {
-	int add(int x, int y)
-	{
-		return x + y;
-	}
+  bool x;
 
-	int sub(int x, int y)
-	{
-		return x - y;
-	}
-	
-	void main()
-	{
-		int x;
-		
-		if (x > 100)
-		{
-			x = add(1 + 1, 2 + 2);
-		}
-	}
+  void main()
+  {
+    int y;
+    int z;
+
+    while (false)
+    {
+      if (y > 100)
+      {
+        x = false;
+      }
+      y = y + 1;
+    }
+  }
 }
