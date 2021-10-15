@@ -485,6 +485,8 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
     // acc code
     for (auto c : expr_e->l_code)
         attrs->l_code.push_back(c);
+    for (auto c : expr_e->lj_code)
+        attrs->lj_code.push_back(c);
 
     // calculate array offset = width * index
     std::string a0 = expr_e->value != "" ? expr_e->value : expr_e->addr;
@@ -1211,14 +1213,15 @@ void SymbolTableListener::exitExpr_loc(DecafParser::Expr_locContext *ctx)
 {
     // this node attributes
     NodeAttrs *attrs = this->get_node_attrs(ctx);
+    NodeAttrs *a = this->get_node_attrs(ctx->children[0]);
+    int node_type = this->get_node_type(ctx->children[0]);
+
     if (attrs == NULL)
     {
         attrs = new NodeAttrs();
+        attrs->l_code.insert(attrs->l_code.begin(), a->l_code.begin(), a->l_code.end());
         this->put_node_attrs(ctx, attrs);
     }
-
-    int node_type = this->get_node_type(ctx->children[0]);
-    NodeAttrs *a = this->get_node_attrs(ctx->children[0]);
 
     // if this location is boolean, we generate its jumping code because some
     // ancestor node might use it
@@ -1233,7 +1236,7 @@ void SymbolTableListener::exitExpr_loc(DecafParser::Expr_locContext *ctx)
     // E.addr = loc.addr
     attrs->entry = a->entry;
     attrs->addr = a->addr;
-    attrs->l_code.insert(attrs->l_code.begin(), a->l_code.begin(), a->l_code.end());
+    // attrs->l_code.insert(attrs->l_code.begin(), a->l_code.begin(), a->l_code.end());
 }
 
 /// ----------------------------------------------------------------------------------------------------
