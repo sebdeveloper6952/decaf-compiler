@@ -26,11 +26,13 @@ private:
     uint temp_count = 0;
     uint label_count = 0;
     std::vector<std::string> vec_code;
-    void push_table();
+    void push_table(bool inherit_offset);
     SymbolTable *pop_table();
     void process_arith_expr(DecafParser::ExpressionContext *ctx);
     void print_error(std::string msg, size_t line_num);
     void gen_code_expr(DecafParser::ExpressionContext *ctx);
+
+    uint fn_block_size = 0;
 
 public:
     SymbolTableListener(SymbolTable *table, std::vector<IcgInstr *> *instrs);

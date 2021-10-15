@@ -69,7 +69,15 @@ void SymbolTableListener::exitProgram(DecafParser::ProgramContext *ctx)
 void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
 {
     // push a new symbol table for this block
-    this->push_table();
+    bool inherit_offset = false;
+    if (DecafParser::St_ifContext *d =
+            dynamic_cast<DecafParser::St_ifContext *>(ctx->parent))
+        inherit_offset = true;
+    else if (DecafParser::St_whileContext *d =
+                 dynamic_cast<DecafParser::St_whileContext *>(ctx->parent))
+        inherit_offset = true;
+
+    this->push_table(inherit_offset);
 
     // if this node parent is a methodDeclaration, handle its parameters
     // as if they were local variables of this block
@@ -89,6 +97,8 @@ void SymbolTableListener::enterBlock(DecafParser::BlockContext *ctx)
                     param_type,
                     p->ID()->getText(),
                     p->parameterType()->getText());
+
+                this->fn_block_size = this->table->get_offset();
             }
         }
     }
@@ -99,6 +109,11 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
 {
     // pop the symbol table for this block
     SymbolTable *top = this->pop_table();
+
+    // reset the function block size
+    if (DecafParser::MethodDeclarationContext *d =
+            dynamic_cast<DecafParser::MethodDeclarationContext *>(ctx->parent))
+        this->fn_block_size = 0;
 
     NodeAttrs *attrs = this->get_node_attrs(ctx);
     if (attrs == NULL)
@@ -135,6 +150,8 @@ void SymbolTableListener::enterVar_decl(DecafParser::Var_declContext *ctx)
 
         return;
     }
+
+    this->fn_block_size = this->table->get_offset();
 }
 
 /**
@@ -178,6 +195,8 @@ void SymbolTableListener::enterVar_arr_decl(DecafParser::Var_arr_declContext *ct
 
         return;
     }
+
+    this->fn_block_size = this->table->get_offset();
 }
 
 void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declContext *ctx)
@@ -219,6 +238,8 @@ void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declConte
 
             return;
         }
+
+        this->fn_block_size = this->table->get_offset();
     }
     // struct instance declaration
     else
@@ -235,6 +256,8 @@ void SymbolTableListener::enterVar_struct_decl(DecafParser::Var_struct_declConte
 
             return;
         }
+
+        this->fn_block_size = this->table->get_offset();
     }
 
     // save this node type
@@ -249,7 +272,7 @@ void SymbolTableListener::exitVar_struct_decl(DecafParser::Var_struct_declContex
 void SymbolTableListener::enterStructDeclaration(DecafParser::StructDeclarationContext *ctx)
 {
     // new symbol table for this struct scope
-    this->push_table();
+    this->push_table(false);
 }
 
 void SymbolTableListener::exitStructDeclaration(DecafParser::StructDeclarationContext *ctx)
@@ -1674,11 +1697,15 @@ int SymbolTableListener::get_node_type(antlr4::tree::ParseTree *node)
 }
 
 // Auxiliary methods.
-void SymbolTableListener::push_table()
+void SymbolTableListener::push_table(bool inherit_offset)
 {
     // push a new table
     SymbolTable *new_top =
-        new SymbolTable(this->table, "table_" + std::to_string(this->num_tables++));
+        new SymbolTable(
+            this->table,
+            "table_" + std::to_string(this->num_tables++),
+            inherit_offset ? this->fn_block_size : 0);
+
     this->table = new_top;
 }
 

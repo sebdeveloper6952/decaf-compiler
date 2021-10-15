@@ -1,24 +1,6 @@
-class Program {
-
-	int sum(int x, int y)
-	{
-		if (x > 0)
-		{
-			return x;
-		}
-		else
-		{
-			return y;
-		}
-		
-		return x + y;
-	}
-
+class Program
+{
 	void main()
 	{
-		int a;
-		int x[10];
-		
-		a = x[0];
 	}
 }

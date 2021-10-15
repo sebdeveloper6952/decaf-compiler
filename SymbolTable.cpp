@@ -2,10 +2,12 @@
 #include "SymbolTable.h"
 #include "DataTypes.h"
 
-SymbolTable::SymbolTable(SymbolTable *parent, std::string const &name)
+SymbolTable::SymbolTable(SymbolTable *parent, std::string const &name, uint offset)
 {
     this->parent = parent;
     this->name = name;
+
+    this->offset = offset;
 }
 
 SymbolTable *SymbolTable::get_parent()

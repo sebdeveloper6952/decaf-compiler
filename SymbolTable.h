@@ -7,8 +7,8 @@
 class SymbolTable
 {
 private:
-    std::size_t num_entries = 0;
-    std::size_t offset = 0;
+    uint num_entries = 0;
+    uint offset = 0;
     SymbolTable *parent;
     std::string name;
     std::map<std::string, SymbolTableEntry *> table;
@@ -16,7 +16,7 @@ private:
 
 public:
     SymbolTable() = default;
-    SymbolTable(SymbolTable *parent, std::string const &name);
+    SymbolTable(SymbolTable *parent, std::string const &name, uint offset = 0);
     size_t get_num_entries();
     size_t get_offset();
     SymbolTable *get_parent();
