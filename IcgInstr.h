@@ -40,4 +40,6 @@ public:
     std::string res;
 
     static uint8_t op_to_int(std::string op);
+    static std::string int_to_op(uint8_t op);
+    std::string to_string();
 };

@@ -13,6 +13,8 @@
 #include "DataTypes.h"
 #include "IcgInstr.h"
 #include "IcGen.h"
+#include "MipsGen.h"
+#include "Utils.h"
 
 using namespace antlr4;
 
@@ -53,6 +55,9 @@ int main(int argc, const char *argv[])
     std::cout << "__icg__" << std::endl;
     for (auto i : ic)
         std::cout << i;
+
+    // target code generation
+    MipsGen::gen_code(instrs);
 
     return 0;
 }
