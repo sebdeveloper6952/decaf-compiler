@@ -9,7 +9,7 @@ class Utils
     public:
         static int write_to_file(
             std::string name, 
-            std::vector<std::string>
+            std::string
         );
     
 };

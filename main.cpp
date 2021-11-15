@@ -57,7 +57,10 @@ int main(int argc, const char *argv[])
         std::cout << i;
 
     // target code generation
-    MipsGen::gen_code(instrs);
+    std::string target_code = MipsGen::gen_code(table, instrs);
+
+    // write code to file
+    Utils::write_to_file("mips/output.asm", target_code);
 
     return 0;
 }

@@ -110,11 +110,19 @@ void SymbolTableListener::exitBlock(DecafParser::BlockContext *ctx)
     // pop the symbol table for this block
     SymbolTable *top = this->pop_table();
 
-    // reset the function block size
+    // if block belongs to method
     if (DecafParser::MethodDeclarationContext *d =
             dynamic_cast<DecafParser::MethodDeclarationContext *>(ctx->parent))
+    {
+        // update method size
+        SymbolTableEntry *e_method = this->table->get(d->ID()->getText());
+        if (e_method != NULL)
+            e_method->size = this->fn_block_size;
+        
+        // reset block size
         this->fn_block_size = 0;
-
+    }
+    
     NodeAttrs *attrs = this->get_node_attrs(ctx);
     if (attrs == NULL)
     {
@@ -676,7 +684,12 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     // new method label
     attrs->addr = this->new_method_label(ctx->ID()->getText());
 
-    attrs->l_code.push_back(new IcgInstr(OP_FN, "", "", attrs->addr));
+    // create and populate the new icg
+    SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
+    IcgInstr *icg = new IcgInstr(OP_FN, "", "", attrs->addr);
+    icg->e_res = e;
+
+    attrs->l_code.push_back(icg);
     for (IcgInstr *c : block_attrs->l_code)
         attrs->l_code.push_back(c);
     attrs->l_code.push_back(new IcgInstr(OP_EFN, "", "", attrs->addr));

@@ -93,6 +93,7 @@ bool SymbolTable::add_method_param(std::string id, std::string type)
 
     int p_type = DataTypes::get_instance()->get_type_int(type);
     this->table[id]->m_params.push_back(p_type);
+    this->table[id]->size += DataTypes::get_instance()->int_to_width(p_type);
 
     return true;
 }
