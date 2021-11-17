@@ -18,7 +18,7 @@ public:
     T__20 = 21, T__21 = 22, T__22 = 23, T__23 = 24, T__24 = 25, T__25 = 26, 
     T__26 = 27, T__27 = 28, T__28 = 29, CLASS = 30, PROGRAM = 31, STRUCT = 32, 
     TRUE = 33, FALSE = 34, IF = 35, ELSE = 36, VOID = 37, ID = 38, CHAR = 39, 
-    NUM = 40, WHITESPACE = 41, COMMENT = 42
+    NUM = 40, WHITESPACE = 41, COMMENT = 42, SEBAS_PRINT = 43
   };
 
   enum {

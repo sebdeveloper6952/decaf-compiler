@@ -11,5 +11,5 @@ class Utils
             std::string name, 
             std::string
         );
-    
+        static int random_int(int max);
 };

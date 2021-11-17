@@ -38,6 +38,8 @@ public:
     std::string a0;
     std::string a1;
     std::string res;
+    SymbolTableEntry *e_a0;
+    SymbolTableEntry *e_a1;
     SymbolTableEntry *e_res;
 
     static uint8_t op_to_int(std::string op);

@@ -688,11 +688,13 @@ void SymbolTableListener::exitMethodDeclaration(DecafParser::MethodDeclarationCo
     SymbolTableEntry *e = this->table->get(ctx->ID()->getText());
     IcgInstr *icg = new IcgInstr(OP_FN, "", "", attrs->addr);
     icg->e_res = e;
+    IcgInstr *e_icg = new IcgInstr(OP_EFN, "", "", attrs->addr);
+    e_icg->e_res = e;
 
     attrs->l_code.push_back(icg);
     for (IcgInstr *c : block_attrs->l_code)
         attrs->l_code.push_back(c);
-    attrs->l_code.push_back(new IcgInstr(OP_EFN, "", "", attrs->addr));
+    attrs->l_code.push_back(e_icg);
     this->put_node_attrs(ctx, attrs);
     this->put_node_attrs(ctx->parent, attrs);
 }
@@ -775,22 +777,21 @@ void SymbolTableListener::exitMethodCall(DecafParser::MethodCallContext *ctx)
         if (p_attrs != NULL)
         {
             std::string t = p_attrs->value != "" ? p_attrs->value : p_attrs->addr;
-            attrs->l_code.push_back(new IcgInstr(OP_PARM, t, "", ""));
+            IcgInstr *icg = new IcgInstr(OP_PARM, t, "", "");
+            icg->e_a0 = p_attrs->entry;
+            attrs->l_code.push_back(icg);
         }
     }
 
+    IcgInstr *icg_call = new IcgInstr(OP_CALL, e->id, std::to_string(e->m_params.size()), "");
+    icg_call->e_a0 = e;
     if (e->data_type != T_VOID)
     {
         attrs->addr = this->new_temp();
+        icg_call->res = attrs->addr;
+    }
 
-        attrs->l_code.push_back(
-            new IcgInstr(OP_CALL, e->id, std::to_string(e->m_params.size()), attrs->addr));
-    }
-    else
-    {
-        attrs->l_code.push_back(
-            new IcgInstr(OP_CALL, e->id, std::to_string(e->m_params.size()), ""));
-    }
+    attrs->l_code.push_back(icg_call);
 
     this->put_node_attrs(ctx, attrs);
 }
@@ -1390,7 +1391,10 @@ void SymbolTableListener::exitSt_assignment(DecafParser::St_assignmentContext *c
     for (IcgInstr *c : expr_attrs->l_code)
         assign_attrs->l_code.push_back(c);
 
-    assign_attrs->l_code.push_back(new IcgInstr(OP_ASGN, expr_attrs->addr, "", loc_attrs->addr));
+    IcgInstr *icg = new IcgInstr(OP_ASGN, expr_attrs->addr, "", loc_attrs->addr);
+    icg->e_a0 = expr_attrs->entry;
+    icg->e_res = loc_attrs->entry;
+    assign_attrs->l_code.push_back(icg);
     assign_attrs->addr = loc_attrs->addr;
 
     this->put_node_attrs(ctx, assign_attrs);
@@ -1681,8 +1685,9 @@ void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
         // return code
         for (IcgInstr *c : ret_expr_attrs->l_code)
             attrs->l_code.push_back(c);
-        attrs->l_code.push_back(new IcgInstr(OP_RET, ret_expr_attrs->addr, "", ""));
-        // attrs->l_code.push_back(new IcgInstr(OP_GOTO, "", "", "next"));
+        IcgInstr *icg = new IcgInstr(OP_RET, ret_expr_attrs->addr, "", "");
+        icg->e_res = entry;
+        attrs->l_code.push_back(icg);
 
         this->put_node_attrs(ctx, attrs);
     }
@@ -1818,7 +1823,8 @@ std::string SymbolTableListener::new_label()
 
 std::string SymbolTableListener::new_method_label(std::string extra)
 {
-    return "_" + extra + "_";
+    // return "_" + extra + "_";
+    return extra;
 }
 
 void SymbolTableListener::print_error(std::string msg, size_t line_num)
@@ -1862,7 +1868,10 @@ void SymbolTableListener::gen_code_expr(DecafParser::ExpressionContext *ctx)
     for (auto c : n1->l_code)
         attrs->l_code.push_back(c);
 
-    attrs->l_code.push_back(new IcgInstr(IcgInstr::op_to_int(attrs->op), expr_0, expr_1, attrs->addr));
+    IcgInstr *icg = new IcgInstr(IcgInstr::op_to_int(attrs->op), expr_0, expr_1, attrs->addr);
+    icg->e_a0 = n0->entry;
+    icg->e_a1 = n1->entry;
+    attrs->l_code.push_back(icg);
     attrs->lj_code.push_back(new IcgInstr(OP_IF, attrs->addr, "", attrs->l_true));
     attrs->lj_code.push_back(new IcgInstr(OP_GOTO, "", "", attrs->l_false));
 }
