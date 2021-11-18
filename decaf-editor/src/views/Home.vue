@@ -42,7 +42,7 @@
       v-if="activeTab == 2"
       class="my-editor middle-editor"
       style="height: 50vh"
-      v-model="assemblyCode"
+      v-model="targetCode"
       :highlight="highlighter"
       line-numbers
       :readonly="activeTab != 0"
@@ -359,7 +359,7 @@ export default {
     return {
       code: "class Program \n{\n\tint a;\n\n\tvoid main()\n\t{\n\t\ta = 1;\n\t}\n}",
       intermmediateCode: "",
-      assemblyCode: "",
+      targetCode: "",
       output: "",
       errorLines: [],
       red: "#FF5733",
@@ -454,6 +454,7 @@ export default {
           this.output = data.data.lex;
           this.output += data.data.sem;
           this.intermmediateCode = data.data.icg;
+          this.targetCode = data.data.target;
         });
     },
     clearCode() {

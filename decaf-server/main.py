@@ -13,6 +13,7 @@ def api():
     command = ["./src/main", data]
     result = subprocess.run(command, capture_output=True, encoding='utf-8')
     icg = result.stdout.split("__icg__")
+    target = icg.stdout.split("__mips__")
 
     data = {
         "message": "Code checked.",
@@ -20,6 +21,7 @@ def api():
             "lex": result.stderr,
             "sem": result.stdout,
             "icg": icg[1] if len(icg) > 1 else "error",
+            "target": target[1] if len(target) > 1 else "error"
         }
     }
 

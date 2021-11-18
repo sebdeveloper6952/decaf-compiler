@@ -60,6 +60,10 @@ int main(int argc, const char *argv[])
     MipsGen *mips_gen = new MipsGen();
     std::string target_code = mips_gen->gen_code(table, instrs);
 
+    // print mips code
+    std::cout << "__mips__" << std::endl;
+    std::cout << target_code;
+
     // write code to file
     Utils::write_to_file("mips/output.asm", target_code);
 

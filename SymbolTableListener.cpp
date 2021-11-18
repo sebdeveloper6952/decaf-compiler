@@ -1871,6 +1871,7 @@ void SymbolTableListener::gen_code_expr(DecafParser::ExpressionContext *ctx)
     IcgInstr *icg = new IcgInstr(IcgInstr::op_to_int(attrs->op), expr_0, expr_1, attrs->addr);
     icg->e_a0 = n0->entry;
     icg->e_a1 = n1->entry;
+    icg->e_res = NULL;
     attrs->l_code.push_back(icg);
     attrs->lj_code.push_back(new IcgInstr(OP_IF, attrs->addr, "", attrs->l_true));
     attrs->lj_code.push_back(new IcgInstr(OP_GOTO, "", "", attrs->l_false));

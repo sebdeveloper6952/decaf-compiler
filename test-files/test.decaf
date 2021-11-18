@@ -1,5 +1,7 @@
 class Program
 {
+	int array[10];
+
 	void print_int(int a) {}
 
 	int sum(int a, int b)
@@ -9,12 +11,12 @@ class Program
 
 	void main()
 	{
-		int a;
-		int b;
-		int c;
+		int x;
+		x = 3;
 
-		a = sum(b, c);
-
-		print_int(a);
+		if (x < 10)
+		{
+			x = 69;
+		}
 	}
 }

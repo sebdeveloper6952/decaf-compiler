@@ -92,6 +92,12 @@ std::vector<LocType *> *RegisterDescriptor::get_locs(std::string reg)
     return &this->descriptor[reg];
 }
 
+void RegisterDescriptor::clear_reg(std::string reg)
+{
+    if (this->descriptor.count(reg))
+        this->descriptor[reg].clear();
+}
+
 void RegisterDescriptor::clear()
 {
     for (auto i : this->descriptor)

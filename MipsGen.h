@@ -10,6 +10,7 @@
 #define LOC_STK 1
 #define LOC_REG 2
 #define LOC_TMP 3
+#define LOC_LIT 4
 
 class LocType {
 public:
@@ -29,7 +30,6 @@ public:
         std::string key = "";
         if (this->type == LOC_GBL)
         {
-            // key += "global_";
             key += this->value;
         }
         else if(this->type == LOC_STK)
@@ -43,7 +43,6 @@ public:
         }
         else if (this->type == LOC_TMP)
         {
-            // key += "tmp_";
             key += this->value;
         }
 
@@ -100,6 +99,7 @@ public:
     std::vector<LocType *> *get_locs(std::string reg);
     void add_loc(std::string reg, LocType *loc);
     void set_only_loc(std::string reg, LocType *loc);
+    void clear_reg(std::string reg);
     void clear();
 private:
     std::map<std::string, std::vector<LocType *>> descriptor;
@@ -136,10 +136,8 @@ public:
 private:
     AddressDescriptor *ad;
     RegisterDescriptor *rd;
-    GetRegRes *get_reg(IcgInstr *i);
     LocType *get_reg_i(LocType *loc, GetRegRes *res);
     LocType *get_loc_for_ste(SymbolTableEntry *e, std::string l);
-    GetRegRes *get_reg_for_op(IcgInstr *i);
     GetRegRes *get_reg_for_copy(IcgInstr *i);
     std::string op_to_mips(uint8_t op);
 };
