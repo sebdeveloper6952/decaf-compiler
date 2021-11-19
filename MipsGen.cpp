@@ -119,18 +119,24 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
 
             // calculate function size as WORD size + entry size
             uint fn_size = 4 + i->e_res->size;
-            code += i->res + ":\n";
-            code += "stalloc(" + std::to_string(fn_size) + ")\n";
-
             // save current function size
             this->fn_size = fn_size;
+
+            code += i->res + ":\n";
+            code += "stalloc(" + std::to_string(fn_size) + ")\n";
         }
 
         else if (i->op_code == OP_EFN)
         {
+            // clear descriptors
+            this->ad->clear();
+            this->rd->clear();
+
             uint fn_size = 4 + i->e_res->size;
-            code += "stfree(" + std::to_string(fn_size) + ")\n";
-            code += "jr $ra\n\n";
+
+            code += "end_" + i->res +":\n";
+            code += "\tstfree(" + std::to_string(fn_size) + ")\n";
+            code += "\tjr $ra\n\n";
         }
 
         else if (i->op_code == OP_PARM)
@@ -141,29 +147,53 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
         
         else if (i->op_code == OP_CALL)
         {
+            // clear descriptors
+            // this->ad->clear();
+            // this->rd->clear();
+
+            std::cout << "call " << i->e_a0->id << std::endl;
             uint fn_size = 4 + i->e_a0->size;
             for (int i = 0; i < this->params.size(); i++)
             {
                 std::cout << "store param at -" << std::to_string(fn_size - 4 * i) << "($sp)" << std::endl;
                 IcgInstr *icg = this->params[i];
-                if (icg->e_a0 != NULL)
-                {
-                    std::cout << "\tid: " << icg->e_a0->id << std::endl;
-                    LocType *loc = this->get_loc_for_ste(icg->e_a0, icg->a0);
-                    GetRegRes *res = new GetRegRes();
-                    LocType *reg = this->get_reg_i(loc, res);
-                    std::cout << "\tkey: " << loc->to_key() << std::endl;
+                LocType *loc = this->get_loc_for_ste(icg->e_a0, icg->a0);
+                GetRegRes *res = new GetRegRes();
+                LocType *reg = this->get_reg_i(loc, res);
 
-                    for (auto i : res->instrs)
-                        code += i->to_string();
-                    code += "sw " + reg->value + ", -" + std::to_string(fn_size - 4 * i) + "($sp)\n";
-                }
+                // dump any load/stores
+                for (auto i : res->instrs)
+                    code += i->to_string();
+
+                // gen mips
+                code += "sw " + reg->value + ", -" + std::to_string(fn_size - 4 * i) + "($sp)\n";
             }
             this->params.clear();
 
+            // generate jump code
             code += "sw $ra, " + std::to_string(this->fn_size - 4) + "($sp)\n";
             code += "jal " + i->a0 + "\n";
             code += "lw $ra, " + std::to_string(this->fn_size - 4) + "($sp)\n";
+
+            // maybe allocate space for returned value
+            if (i->res.length())
+            {
+                std::cout << "\treturn value must be saved at " << i->res << std::endl;
+                LocType *loc = new LocType();
+                loc->type = LOC_TMP;
+                loc->value = i->res;
+                GetRegRes *res = new GetRegRes();
+                LocType *reg = this->get_reg_i(loc, res);
+
+                for (auto i : res->instrs)
+                    code += i->to_string();
+                
+                code += "move " + reg->value + ", " + " $v0\n";
+            }
+
+            // clear descriptors
+            this->ad->clear();
+            // this->rd->clear();
         }
 
         else if (i->op_code == OP_RET)
@@ -174,7 +204,11 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
             GetRegRes *res = new GetRegRes();
             LocType *reg = this->get_reg_i(loc, res);
 
+            for (auto i : res->instrs)
+                code += i->to_string();
+
             code += "move $v0, " + reg->value + "\n";
+            code += "j end_" + i->e_res->id + "\n";
         }
         
         else if (i->op_code == OP_ASGN)
@@ -338,12 +372,14 @@ LocType *MipsGen::get_loc_for_ste(SymbolTableEntry *e, std::string l)
     {
         try
         {
+            std::cout << "trying to convert literal: " << l << std::endl;
             int i = std::stoi(l);
             loc->type = LOC_LIT;
             loc->value = l;
         }
         catch(const std::exception& e)
         {
+            std::cout << l << " failed, it is not a literal." << std::endl;
             loc->type = LOC_TMP;
             loc->value = l;
         }

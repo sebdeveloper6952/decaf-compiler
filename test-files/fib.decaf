@@ -1,0 +1,27 @@
+class Program
+{
+    int fib(int a)
+    {
+        int x;
+        int y;
+
+        if (a <= 2)
+        {
+            return 1;
+        }
+
+        x = fib(a - 1);
+        y = fib(a - 2);
+
+        return x + y;
+    }
+
+    void main()
+    {
+        int x;
+        int res;
+
+        x = 10;
+        res = fib(x);
+    }
+}
