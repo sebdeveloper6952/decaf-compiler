@@ -110,3 +110,8 @@ void AddressDescriptor::clear()
 {
     this->descriptor.clear();
 }
+
+std::vector<LocType *> *AddressDescriptor::get_locs(LocType *loc)
+{
+    return &this->descriptor[loc->to_key()];
+}

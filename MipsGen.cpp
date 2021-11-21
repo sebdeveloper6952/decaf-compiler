@@ -150,6 +150,8 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
         {
             std::cout << "call " << i->e_a0->id << std::endl;
             uint fn_size = 4 + i->e_a0->size;
+
+            // save next procedure params on stack
             for (int i = 0; i < this->params.size(); i++)
             {
                 std::cout << "store param at -" << std::to_string(fn_size - 4 * i) << "($sp)" << std::endl;
@@ -485,27 +487,37 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
         reg = this->rd->get_occupied(&exc);
         std::vector<LocType *> *locs = this->rd->get_locs(reg->value);
         for (auto loc : *locs)
-        {
+        {   
             std::string key = loc->to_key();
-            std::cout << "[get_reg_i] need to store (" << key << ") ";
-            if (loc->type == LOC_GBL)
-                std::cout << " is global";
-            if (loc->type == LOC_STK)
-                std::cout << " is stack";
-            if (loc->type == LOC_TMP)
-                std::cout << " is tmp";
-            if (loc->type == LOC_LIT)
-                std::cout << " is literal";
-            std::cout << std::endl;
-            
             if (loc->type != LOC_TMP && loc->type != LOC_LIT)
             {
                 if (!this->ad->has_loc(*loc, loc))
                 {
-                    std::cout << "[get_reg_i] generating STORE" << std::endl;
-                    res->instrs.push_back(new MipsInstr("sw " + reg->value + ", " + loc->to_key() + "\n"));
+                    if (loc->type == LOC_STK)
+                    {
+                        res->instrs.push_back(new MipsInstr("sw " + reg->value + ", " + loc->to_key() + "\n"));
+                    }
+                    // std::string s = "sw " + reg->value + ", ";
+                    // if (loc->type == LOC_GBL && loc->is_array)
+                    // {
+                    //     LocType *tmp = new LocType();
+                    //     tmp->type = LOC_TMP;
+                    //     tmp->value = loc->arr_offset;
+                    //     LocType *reg = this->ad->get_register(tmp);
+                    //     s += "global(" + reg->value + ")\n";
+                    // }
+                    // else
+                    // {
+                    //     s += loc->to_key() + "\n";
+                    // }
+                    // s += loc->to_key() + "\n";
+                    
+                    // res->instrs.push_back(new MipsInstr(s));
+                    
                     // update address descriptor for loc to include its own memory location
                     this->ad->add_loc(*loc, loc);
+
+                    
                 }
             }
         }

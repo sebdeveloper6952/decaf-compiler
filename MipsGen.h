@@ -82,10 +82,8 @@ public:
     void set_only_loc(LocType loc, LocType *new_loc);
     void remove_from_all_except(LocType loc, std::string reg);
     bool has_loc(LocType loc_0, LocType *loc_1);
+    std::vector<LocType *> *get_locs(LocType *loc);
     void clear();
-private:
-    std::map<std::string, std::vector<LocType *>> descriptor;
-    
     void to_string()
     {
         for (auto p : this->descriptor)
@@ -98,6 +96,8 @@ private:
             std::cout << std::endl;
         }
     }
+private:
+    std::map<std::string, std::vector<LocType *>> descriptor;
 };
 
 class RegisterDescriptor {
@@ -107,13 +107,11 @@ public:
     LocType *get_one();
     LocType *get_occupied(std::vector<std::string> *exc);
     std::vector<LocType *> *get_locs(std::string reg);
+    LocType *get_loc(LocType *loc);
     void add_loc(std::string reg, LocType *loc);
     void set_only_loc(std::string reg, LocType *loc);
     void clear_reg(std::string reg);
     void clear();
-private:
-    std::map<std::string, std::vector<LocType *>> descriptor;
-
     void to_string()
     {
         for (auto p : this->descriptor)
@@ -130,6 +128,8 @@ private:
             std::cout << std::endl;
         }
     }
+private:
+    std::map<std::string, std::vector<LocType *>> descriptor;
 };
 
 class MipsGen
