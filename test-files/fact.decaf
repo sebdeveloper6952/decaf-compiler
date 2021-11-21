@@ -1,5 +1,7 @@
 class Program
 {
+    void print_int(int a) {}
+
     int fact(int a)
     {
         int t;
@@ -19,7 +21,9 @@ class Program
         int x;
         int res;
 
-        x = 5;
+        x = 12;
         res = fact(x);
+
+        print_int(res);
     }
 }

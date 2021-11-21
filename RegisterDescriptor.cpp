@@ -15,10 +15,6 @@ RegisterDescriptor::RegisterDescriptor()
     this->descriptor["$t7"] = std::vector<LocType *>();
     this->descriptor["$t8"] = std::vector<LocType *>();
     this->descriptor["$t9"] = std::vector<LocType *>();
-    // this->descriptor["$a0"] = std::vector<LocType *>();
-    // this->descriptor["$a1"] = std::vector<LocType *>();
-    // this->descriptor["$a2"] = std::vector<LocType *>();
-    // this->descriptor["$a3"] = std::vector<LocType *>();
 }
 
 bool RegisterDescriptor::has_free()
@@ -54,22 +50,11 @@ LocType *RegisterDescriptor::get_occupied(std::vector<std::string> *exc)
     LocType *best_reg = new LocType();
     best_reg->type = LOC_REG;
 
-    for (auto reg : *exc)
-    {
-        std::cout << "[RegDes] give me one that is not " << reg << std::endl;
-    }
-
     for (auto reg : this->descriptor)
     {
         size_t curr_score = 0;
         if (std::find(exc->begin(), exc->end(), reg.first) == exc->end())
         {
-            std::cout << "[RegDes] found a register " << reg.first << std::endl;
-            
-            // loc = new LocType();
-            // loc->type = LOC_REG;
-            // loc->value = reg.first;
-
             for (auto loc : *this->get_locs(reg.first))
             {
                 if (loc->type != LOC_LIT)
@@ -78,7 +63,6 @@ LocType *RegisterDescriptor::get_occupied(std::vector<std::string> *exc)
 
             if (curr_score < min_score)
             {
-                std::cout << "\t[RegDes] " << reg.first << " has new BEST SCORE of " << std::to_string(curr_score) << std::endl;
                 best_reg->value = reg.first;
                 min_score = curr_score;
             }
@@ -92,8 +76,6 @@ void RegisterDescriptor::add_loc(std::string reg, LocType *loc)
 {
     if (this->descriptor.count(reg))
         this->descriptor[reg].push_back(loc);
-
-    this->to_string();
 }
 
 void RegisterDescriptor::set_only_loc(std::string reg, LocType *loc)
@@ -103,8 +85,6 @@ void RegisterDescriptor::set_only_loc(std::string reg, LocType *loc)
         this->descriptor[reg].clear();
         this->descriptor[reg].push_back(loc);
     }
-
-    this->to_string();
 }
 
 std::vector<LocType *> *RegisterDescriptor::get_locs(std::string reg)

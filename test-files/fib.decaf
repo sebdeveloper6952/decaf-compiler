@@ -1,5 +1,7 @@
 class Program
 {
+    void print_int(int a) {}
+
     int fib(int a)
     {
         int x;
@@ -23,5 +25,7 @@ class Program
 
         x = 10;
         res = fib(x);
+
+        print_int(res);
     }
 }

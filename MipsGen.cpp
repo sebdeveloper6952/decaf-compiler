@@ -70,15 +70,9 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
     for (int j = 0; j < instrs.size(); j++)
     {   
         IcgInstr *i = instrs[j];
-
-        std::cout << "curr instr: " << i->to_string() << std::endl;
-
         if (i->op_code <= OP_MOD)
         {
             GetRegRes *res = new GetRegRes();
-
-            std::cout << "a0: " + i->a0 + ", a1: " + i->a1 + ", res: " + i->res << std::endl;
-
             LocType *loc_a0 = this->get_loc_for_ste(i->e_a0, i->a0);
             LocType *loc_a1 = this->get_loc_for_ste(i->e_a1, i->a1);
             LocType *loc_res = this->get_loc_for_ste(i->e_res, i->res);
@@ -125,6 +119,13 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
 
             code += i->res + ":\n";
             code += "stalloc(" + std::to_string(fn_size) + ")\n";
+
+            if (i->e_res->id == "print_int")
+            {
+                code += "lw $a0, 0($sp)\n";
+                code += "li $v0, 1\n";
+                code += "syscall\n";
+            }
         }
 
         else if (i->op_code == OP_EFN)
@@ -142,19 +143,15 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
 
         else if (i->op_code == OP_PARM)
         {
-            std::cout << "param " << i->a0 << std::endl;
             this->params.push_back(i);
         }
         
         else if (i->op_code == OP_CALL)
         {
-            std::cout << "call " << i->e_a0->id << std::endl;
             uint fn_size = 4 + i->e_a0->size;
-
             // save next procedure params on stack
             for (int i = 0; i < this->params.size(); i++)
             {
-                std::cout << "store param at -" << std::to_string(fn_size - 4 * i) << "($sp)" << std::endl;
                 IcgInstr *icg = this->params[i];
                 LocType *loc = this->get_loc_for_ste(icg->e_a0, icg->a0);
                 GetRegRes *res = new GetRegRes();
@@ -177,7 +174,6 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
             // maybe allocate space for returned value
             if (i->res.length())
             {
-                std::cout << "\treturn value must be saved at " << i->res << std::endl;
                 LocType *loc = new LocType();
                 loc->type = LOC_TMP;
                 loc->value = i->res;
@@ -196,8 +192,6 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
 
         else if (i->op_code == OP_RET)
         {
-            std::cout << "RETURN from fn " << i->e_res->id << std::endl;
-            
             LocType *loc = this->get_loc_for_ste(i->e_a0, i->a0);
             GetRegRes *res = new GetRegRes();
             LocType *reg = this->get_reg_i(loc, res);
@@ -218,8 +212,6 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
             LocType *r1 = this->get_reg_i(loc_a0, res);
             
             res->r1 = r1->value;
-
-            std::cout << "[OP_ASGN] res is at " << r1->value << std::endl;
 
             for (auto i : res->instrs)
                 code += i->to_string();
@@ -313,16 +305,6 @@ std::string MipsGen::gen_macros()
 	macros += "\tadd $sp, $sp, %bytes\n";
     macros += ".end_macro\n";
 
-    // macros += ".macro print_int()\n";
-    // macros += "\tmove $a1, $a0\n";
-    // macros += "\tla $a0, print_int_msg\n";
-    // macros += "\tli $v0, 4\n";
-    // macros += "\tsyscall\n";
-    // macros += "\tmove $a0, $a1\n";
-    // macros += "\tli $v0, 1\n";
-    // macros += "\tsyscall\n";
-    // macros += ".end_macro\n";
-
     return macros;
 }
 
@@ -368,24 +350,19 @@ LocType *MipsGen::get_loc_for_ste(SymbolTableEntry *e, std::string l)
     LocType *loc = new LocType();
     if (e != NULL)
     {
-        std::cout << "loc has entry: " << std::endl;
         if (e->is_global)
         {
-            std::cout << "\tis global" << std::endl;
             loc->type = LOC_GBL;
-            // loc->value = e->id;
             loc->value = "global";
         }
         else
         {
-            std::cout << "\tis stack" << std::endl;
             loc->type = LOC_STK;
             loc->offset = e->offset;    
         }
 
         if (e->obj_type == O_ARRAY)
         {
-            std::cout << "\tis array" << std::endl;
             loc->is_array = true;
             size_t i = l.find("[");
             size_t j = l.find("]");
@@ -399,7 +376,6 @@ LocType *MipsGen::get_loc_for_ste(SymbolTableEntry *e, std::string l)
             int i = std::stoi(l);
             loc->type = LOC_LIT;
             loc->value = l;
-            std::cout << "loc is literal: " << loc->value << std::endl;
         }
         catch(const std::exception& e)
         {
@@ -418,13 +394,11 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
     std::string loc_key = loc->to_key();
     if (this->ad->is_in_register(loc))
     {
-        std::cout << "[get_reg_i] " << loc_key << " already in register." << std::endl;
         reg = this->ad->get_register(loc);
     }
     // get a free register
     else if (this->rd->has_free())
     {
-        std::cout << "[get_reg_i] " << loc_key << " not in register, getting a free one." << std::endl;
         reg = this->rd->get_one();
         
         if (loc->type == LOC_LIT)
@@ -433,8 +407,6 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
 
             // update register descriptor to include only loc
             this->rd->set_only_loc(reg->value, loc);
-
-            std::cout << "[get_reg_i]" + loc->value + " stored at " + reg->value << std::endl;
         }
 
         else if (loc->type == LOC_TMP)
@@ -474,13 +446,10 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
 
             // update address descriptor of location to include new register
             this->ad->add_loc(*loc, reg);
-
-            std::cout << "[get_reg_i]" + loc->value + " stored at " + reg->value << std::endl;
         }
     }
     else
     {
-        std::cout << "[get_reg_i] " << loc_key << " not in register, getting a occupied one." << std::endl;
         std::vector<std::string> exc;
         if (res->r1.length()) exc.push_back(res->r1);
         if (res->r2.length()) exc.push_back(res->r2);
