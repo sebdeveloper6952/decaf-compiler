@@ -521,11 +521,19 @@ void SymbolTableListener::exitLoc_array(DecafParser::Loc_arrayContext *ctx)
 
     // calculate array offset = width * index
     std::string a0 = expr_e->value != "" ? expr_e->value : expr_e->addr;
-    attrs->l_code.push_back(new IcgInstr(OP_MUL, a0, std::to_string(width), t1));
+    IcgInstr *icg_0 = new IcgInstr(OP_MUL, a0, std::to_string(width), t1);
+    icg_0->e_a0 = expr_e->value != "" ? NULL : expr_e->entry;
+    icg_0->e_a1 = NULL;
+    icg_0->e_res = NULL;
+    attrs->l_code.push_back(icg_0);
 
     // calculate array base + offset
     std::string t2 = this->new_temp();
-    attrs->l_code.push_back(new IcgInstr(OP_SUM, std::to_string(entry->offset), t1, t2));
+    IcgInstr* icg_1 = new IcgInstr(OP_SUM, std::to_string(entry->offset), t1, t2);
+    icg_1->e_a0 = NULL;
+    icg_1->e_a1 = NULL;
+    icg_1->e_res = NULL;
+    attrs->l_code.push_back(icg_1);
 
     // array addr
     attrs->entry = entry;
@@ -1293,6 +1301,7 @@ void SymbolTableListener::exitLiteral(DecafParser::LiteralContext *ctx)
     NodeAttrs *attrs = new NodeAttrs();
     attrs->value = child->value;
     attrs->addr = child->value;
+    attrs->entry = child->entry;
     this->put_node_attrs(ctx, attrs);
     this->put_node_attrs(ctx->parent, attrs);
 }
@@ -1695,7 +1704,6 @@ void SymbolTableListener::exitSt_return(DecafParser::St_returnContext *ctx)
 
 void SymbolTableListener::exitSt_method_call(DecafParser::St_method_callContext *ctx)
 {
-    std::cout << "exitSt_method_call" << std::endl;
     NodeAttrs *child_attrs = this->get_node_attrs(ctx->methodCall());
     this->put_node_attrs(ctx, child_attrs);
 }
@@ -1872,6 +1880,7 @@ void SymbolTableListener::gen_code_expr(DecafParser::ExpressionContext *ctx)
     icg->e_a0 = n0->entry;
     icg->e_a1 = n1->entry;
     icg->e_res = NULL;
+
     attrs->l_code.push_back(icg);
     attrs->lj_code.push_back(new IcgInstr(OP_IF, attrs->addr, "", attrs->l_true));
     attrs->lj_code.push_back(new IcgInstr(OP_GOTO, "", "", attrs->l_false));

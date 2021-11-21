@@ -1,0 +1,25 @@
+class Program
+{
+    int fact(int a)
+    {
+        int t;
+
+        if (a <= 1)
+        {
+            return 1;
+        }
+
+        t = fact(a - 1);
+
+        return a * t;
+    }
+
+    void main()
+    {
+        int x;
+        int res;
+
+        x = 5;
+        res = fact(x);
+    }
+}

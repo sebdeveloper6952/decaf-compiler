@@ -50,6 +50,9 @@ int main(int argc, const char *argv[])
     SymbolTableListener st_listener(table, &instrs);
     tree::ParseTreeWalker::DEFAULT.walk(&st_listener, tree);
 
+    if (instrs.size() == 0)
+        return -1;
+
     // intermmediate code
     std::vector<std::string> ic = IcGen::gen_code(instrs);
     std::cout << "__icg__" << std::endl;
@@ -63,6 +66,9 @@ int main(int argc, const char *argv[])
     // print mips code
     std::cout << "__mips__" << std::endl;
     std::cout << target_code;
+
+    for (auto i : ic)
+        std::cout << i;
 
     // write code to file
     Utils::write_to_file("mips/output.asm", target_code);

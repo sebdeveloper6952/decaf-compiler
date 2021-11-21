@@ -16,7 +16,9 @@ class LocType {
 public:
     uint8_t type;
     uint8_t offset;
+    bool is_array;
     std::string value;
+    std::string arr_offset;
     
     bool operator<(const LocType &ob) const {
         if (type != ob.type)
@@ -45,6 +47,9 @@ public:
         {
             key += this->value;
         }
+
+        if (this->is_array)
+            key += "[" + this->arr_offset + "]";
 
         return key;
     }
