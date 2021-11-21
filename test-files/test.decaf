@@ -5,14 +5,12 @@ class Program
 	void main()
 	{
 		int res;
+		
+		array[0] = 68;
+		array[1] = 1;
 
-		if (array[0] < 10)
-		{
-			res = 0;
-		}
-		else
-		{
-			res = 69;
-		}
+		res = array[0] + array[1];
+
+		array[2] = res;
 	}
 }

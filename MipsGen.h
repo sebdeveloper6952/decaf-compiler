@@ -32,7 +32,8 @@ public:
         std::string key = "";
         if (this->type == LOC_GBL)
         {
-            key += this->value;
+            // key += this->value;
+            key += "global";
         }
         else if(this->type == LOC_STK)
         {
@@ -44,6 +45,10 @@ public:
             key += this->value;
         }
         else if (this->type == LOC_TMP)
+        {
+            key += this->value;
+        }
+        else if (this->type == LOC_LIT)
         {
             key += this->value;
         }
@@ -116,10 +121,11 @@ private:
             std::cout << "\t[RegDes] " << p.first << " => ";
             for (auto l : this->descriptor[p.first])
             {
-                if (l->type == LOC_STK)
-                    std::cout << std::to_string(l->offset) << "($sp)";
-                else
-                    std::cout << l->value << ",";
+                // if (l->type == LOC_STK)
+                //     std::cout << std::to_string(l->offset) << "($sp)";
+                // else
+                //     std::cout << l->value << ",";
+                std::cout << l->to_key() + ",";
             }
             std::cout << std::endl;
         }

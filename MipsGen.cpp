@@ -22,40 +22,38 @@ std::string MipsGen::gen_data_section(SymbolTable *st)
     std::string code = "";
     
     code += ".data\n";
-
-    code += "\tprint_int_msg: .asciiz \"print_int(): \"\n";
     
     // global variables
-    std::string mips_data = "";
+    std::string mips_data = ".align 2\nglobal: .space ";
+    size_t global_size = 0;
     for (auto p : st->table)
     {
         if (p.second->obj_type == O_DATA)
         {
-            mips_data += p.second->id + ": ";
-            
             if (p.second->data_type == T_INT)
-                mips_data += ".word 0";
+                global_size += W_INT;
             else if (p.second->data_type == T_BOOL)
-                mips_data += ".byte 0";
+                global_size += W_BOOL;
             else if (p.second->data_type == T_CHAR)
-                mips_data += ".byte 0";
+                global_size += W_CHAR;
         }
         else if (p.second->obj_type == O_ARRAY)
         {
             int arr_size = p.second->size;
-            mips_data += ".align 2\n" + p.second->id + ": .space ";
 
             if (p.second->data_type == T_INT)
                 arr_size *= W_INT;
 
-            mips_data += std::to_string(arr_size);
+            global_size += arr_size;
         }
-
-        // accumulate code
-        if (mips_data.length())
-            code += mips_data + "\n";
-        mips_data.clear();
     }
+
+    if (global_size > 0)
+    {
+        mips_data += std::to_string(global_size) + "\n";
+        code += mips_data;
+    }
+    mips_data.clear();
 
     return code;
 }
@@ -150,10 +148,6 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
         
         else if (i->op_code == OP_CALL)
         {
-            // clear descriptors
-            // this->ad->clear();
-            // this->rd->clear();
-
             std::cout << "call " << i->e_a0->id << std::endl;
             uint fn_size = 4 + i->e_a0->size;
             for (int i = 0; i < this->params.size(); i++)
@@ -194,9 +188,8 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
                 code += "move " + reg->value + ", " + " $v0\n";
             }
 
-            // clear descriptors
+            // clear descriptor
             this->ad->clear();
-            // this->rd->clear();
         }
 
         else if (i->op_code == OP_RET)
@@ -223,6 +216,8 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
             LocType *r1 = this->get_reg_i(loc_a0, res);
             
             res->r1 = r1->value;
+
+            std::cout << "[OP_ASGN] res is at " << r1->value << std::endl;
 
             for (auto i : res->instrs)
                 code += i->to_string();
@@ -316,15 +311,15 @@ std::string MipsGen::gen_macros()
 	macros += "\tadd $sp, $sp, %bytes\n";
     macros += ".end_macro\n";
 
-    macros += ".macro print_int()\n";
-    macros += "\tmove $a1, $a0\n";
-    macros += "\tla $a0, print_int_msg\n";
-    macros += "\tli $v0, 4\n";
-    macros += "\tsyscall\n";
-    macros += "\tmove $a0, $a1\n";
-    macros += "\tli $v0, 1\n";
-    macros += "\tsyscall\n";
-    macros += ".end_macro\n";
+    // macros += ".macro print_int()\n";
+    // macros += "\tmove $a1, $a0\n";
+    // macros += "\tla $a0, print_int_msg\n";
+    // macros += "\tli $v0, 4\n";
+    // macros += "\tsyscall\n";
+    // macros += "\tmove $a0, $a1\n";
+    // macros += "\tli $v0, 1\n";
+    // macros += "\tsyscall\n";
+    // macros += ".end_macro\n";
 
     return macros;
 }
@@ -376,7 +371,8 @@ LocType *MipsGen::get_loc_for_ste(SymbolTableEntry *e, std::string l)
         {
             std::cout << "\tis global" << std::endl;
             loc->type = LOC_GBL;
-            loc->value = e->id;
+            // loc->value = e->id;
+            loc->value = "global";
         }
         else
         {
@@ -438,12 +434,35 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
 
             std::cout << "[get_reg_i]" + loc->value + " stored at " + reg->value << std::endl;
         }
+
+        else if (loc->type == LOC_TMP)
+        {
+
+        }
         
-        else if (loc->type != LOC_TMP)
+        else /*if (loc->type != LOC_TMP)*/
         {
             std::string s = "lw " + reg->value + ", ";
-            s += loc->to_key() + "\n";
-            
+            if (loc->type == LOC_GBL)
+            {
+                if (loc->is_array)
+                {   
+                    LocType *tmp = new LocType();
+                    tmp->type = LOC_TMP;
+                    tmp->value = loc->arr_offset;
+                    LocType *reg = this->ad->get_register(tmp);
+                    s += "global(" + reg->value + ")\n";
+                }
+                else
+                {
+                    s += "global+" + loc->arr_offset + "\n";
+                }
+            }
+            else
+            {
+                s += loc->to_key() + "\n";
+            }
+
             // generate load instruction
             MipsInstr *load = new MipsInstr(s);
             res->instrs.push_back(load);
@@ -457,10 +476,9 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
             std::cout << "[get_reg_i]" + loc->value + " stored at " + reg->value << std::endl;
         }
     }
-    // fck
     else
     {
-        std::cout << "[get_reg_i] " << loc->value << " not in register, getting a occupied one." << std::endl;
+        std::cout << "[get_reg_i] " << loc_key << " not in register, getting a occupied one." << std::endl;
         std::vector<std::string> exc;
         if (res->r1.length()) exc.push_back(res->r1);
         if (res->r2.length()) exc.push_back(res->r2);
@@ -499,9 +517,34 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
 
         else if (loc->type != LOC_TMP)
         {
+            std::string s = "lw " + reg->value + ", ";
             // generate load
-            res->instrs.push_back(new MipsInstr("lw " + reg->value + ", " + loc_key + "\n"));
+            if (loc->type == LOC_GBL)
+            {
+                if (loc->is_array)
+                {
+                    LocType *tmp = new LocType();
+                    tmp->type = LOC_TMP;
+                    tmp->value = loc->arr_offset;
+                    LocType *reg = this->ad->get_register(tmp);
+                    s += "global(" + reg->value + ")\n";
+                }
+                else
+                {
+                    s += "global+" + loc->arr_offset + "\n";
+                }
+                res->instrs.push_back(new MipsInstr(s));
+            }
+            else
+            {
+                res->instrs.push_back(new MipsInstr("lw " + reg->value + ", " + loc_key + "\n"));
+            }
         }
+
+        // 
+        this->rd->set_only_loc(reg->value, loc);
+        // update address descriptor of location to include new register
+        this->ad->add_loc(*loc, reg);
     }
 
     return reg;
