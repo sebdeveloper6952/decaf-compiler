@@ -1,6 +1,6 @@
 class Program
 {
-    void print_int(int a) {}
+    
 
     int fib(int a)
     {
@@ -18,12 +18,14 @@ class Program
         return x + y;
     }
 
+    void print_int(int a) {}
+
     void main()
     {
         int x;
         int res;
 
-        x = 10;
+        x = 77;
         res = fib(x);
 
         print_int(res);

@@ -1,16 +1,17 @@
 class Program
 {
-	int array[5];
+	int g;
+
+	void print_int(int a) {}
 
 	void main()
 	{
-		int res;
+		int x;
 		
-		array[0] = 68;
-		array[1] = 1;
+		g = 69;
+		x = 100;
 
-		res = array[0] + array[1];
-
-		array[2] = res;
+		x = g;
+		print_int(x);
 	}
 }

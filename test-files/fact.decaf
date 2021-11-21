@@ -1,7 +1,5 @@
 class Program
 {
-    void print_int(int a) {}
-
     int fact(int a)
     {
         int t;
@@ -16,12 +14,14 @@ class Program
         return a * t;
     }
 
+    void print_int(int a) {}
+
     void main()
     {
         int x;
         int res;
 
-        x = 12;
+        x = 8;
         res = fact(x);
 
         print_int(res);

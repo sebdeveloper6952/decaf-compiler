@@ -70,6 +70,7 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
     for (int j = 0; j < instrs.size(); j++)
     {   
         IcgInstr *i = instrs[j];
+        // std::cout << i->to_string() << std::endl;
         if (i->op_code <= OP_MOD)
         {
             GetRegRes *res = new GetRegRes();
@@ -228,6 +229,10 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
                     LocType *reg_offset = get_reg_i(tmp_loc, res);
                     code += "(" + reg_offset->value + ")";
                 }
+                else
+                {
+                    code += "+" + std::to_string(loc_res->offset);
+                }
                 code += "\n";
                 
             }
@@ -354,6 +359,7 @@ LocType *MipsGen::get_loc_for_ste(SymbolTableEntry *e, std::string l)
         {
             loc->type = LOC_GBL;
             loc->value = "global";
+            loc->offset = e->offset;
         }
         else
         {

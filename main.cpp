@@ -67,9 +67,6 @@ int main(int argc, const char *argv[])
     std::cout << "__mips__" << std::endl;
     std::cout << target_code;
 
-    for (auto i : ic)
-        std::cout << i;
-
     // write code to file
     Utils::write_to_file("mips/output.asm", target_code);
 
