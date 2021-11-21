@@ -1,17 +1,13 @@
 class Program
 {
-	int g;
-
+	int read_int() { return 1; }
 	void print_int(int a) {}
 
 	void main()
 	{
 		int x;
-		
-		g = 69;
-		x = 100;
 
-		x = g;
+		x = read_int();
 		print_int(x);
 	}
 }

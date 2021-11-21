@@ -22,6 +22,11 @@ std::string MipsGen::gen_data_section(SymbolTable *st)
     std::string code = "";
     
     code += ".data\n";
+
+    // messages
+    code += "\tread_int_msg: .asciiz \"read_int(): \"\n";
+    code += "\tprint_int_msg: .asciiz \"print_int(): \"\n";
+    code += "\tnewline: .byte '\\n'\n";
     
     // global variables
     std::string mips_data = ".align 2\nglobal: .space ";
@@ -99,7 +104,7 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
                 code += i->to_string();
             
             // generate mips op
-            code += this->op_to_mips(i->op_code) + " " + res->r0 + ", " + res->r1 + ", " + res->r2 + "\n";
+            code += "\t" + this->op_to_mips(i->op_code) + " " + res->r0 + ", " + res->r1 + ", " + res->r2 + "\n";
 
             // housekeeping
             if (loc_a0->type == LOC_LIT)
@@ -119,13 +124,21 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
             this->fn_size = fn_size;
 
             code += i->res + ":\n";
-            code += "stalloc(" + std::to_string(fn_size) + ")\n";
+            code += "\tstalloc(" + std::to_string(fn_size) + ")\n";
 
             if (i->e_res->id == "print_int")
             {
-                code += "lw $a0, 0($sp)\n";
-                code += "li $v0, 1\n";
-                code += "syscall\n";
+                code += "\tla $a0, print_int_msg\n";
+                code += "\tli $v0, 4\n";
+                code += "\tsyscall\n";
+
+                code += "\tlw $a0, 0($sp)\n";
+                code += "\tli $v0, 1\n";
+                code += "\tsyscall\n";
+
+                code += "\tla $a0, newline\n";
+                code += "\tli $v0, 4\n";
+                code += "\tsyscall\n";
             }
         }
 
@@ -163,14 +176,14 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
                     code += i->to_string();
 
                 // gen mips
-                code += "sw " + reg->value + ", -" + std::to_string(fn_size - 4 * i) + "($sp)\n";
+                code += "\tsw " + reg->value + ", -" + std::to_string(fn_size - 4 * i) + "($sp)\n";
             }
             this->params.clear();
 
             // generate jump code
-            code += "sw $ra, " + std::to_string(this->fn_size - 4) + "($sp)\n";
-            code += "jal " + i->a0 + "\n";
-            code += "lw $ra, " + std::to_string(this->fn_size - 4) + "($sp)\n";
+            code += "\tsw $ra, " + std::to_string(this->fn_size - 4) + "($sp)\n";
+            code += "\tjal " + i->a0 + "\n";
+            code += "\tlw $ra, " + std::to_string(this->fn_size - 4) + "($sp)\n";
 
             // maybe allocate space for returned value
             if (i->res.length())
@@ -184,7 +197,7 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
                 for (auto i : res->instrs)
                     code += i->to_string();
                 
-                code += "move " + reg->value + ", " + " $v0\n";
+                code += "\tmove " + reg->value + ", " + " $v0\n";
             }
 
             // clear descriptor
@@ -193,15 +206,27 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
 
         else if (i->op_code == OP_RET)
         {
-            LocType *loc = this->get_loc_for_ste(i->e_a0, i->a0);
-            GetRegRes *res = new GetRegRes();
-            LocType *reg = this->get_reg_i(loc, res);
+            if (i->e_res->id == "read_int")
+            {
+                code += "\tla $a0, read_int_msg\n";
+                code += "\tli $v0, 4\n";
+                code += "\tsyscall\n";
 
-            for (auto i : res->instrs)
-                code += i->to_string();
+                code += "\tli $v0, 5\n\tsyscall\n";
+                code += "\tj end_" + i->e_res->id + "\n";
+            }
+            else
+            {
+                LocType *loc = this->get_loc_for_ste(i->e_a0, i->a0);
+                GetRegRes *res = new GetRegRes();
+                LocType *reg = this->get_reg_i(loc, res);
 
-            code += "move $v0, " + reg->value + "\n";
-            code += "j end_" + i->e_res->id + "\n";
+                for (auto i : res->instrs)
+                    code += i->to_string();
+
+                code += "\tmove $v0, " + reg->value + "\n";
+                code += "\tj end_" + i->e_res->id + "\n";
+            }
         }
         
         else if (i->op_code == OP_ASGN)
@@ -219,7 +244,7 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
 
             if (loc_res->type == LOC_GBL)
             {
-                code += (new MipsInstr("sw " + r1->value + ", " + loc_res->value))->to_string();
+                code += (new MipsInstr("\tsw " + r1->value + ", " + loc_res->value))->to_string();
                 if (loc_res->is_array)
                 {   
                     LocType *tmp_loc = new LocType();
@@ -238,7 +263,7 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
             }
             else if (loc_res->type == LOC_STK)
             {
-                code += (new MipsInstr("sw " + r1->value + ", " + std::to_string(loc_res->offset) + "($sp)\n"))->to_string();
+                code += (new MipsInstr("\tsw " + r1->value + ", " + std::to_string(loc_res->offset) + "($sp)\n"))->to_string();
             }
 
             // update register descriptor of r1 to hold loc_res
@@ -266,6 +291,7 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
                 code += i->to_string();
 
             // gen branching code
+            code += "\t";
             if (prev->op_code == OP_LT)
                 code += "blt ";
             else if (prev->op_code == OP_LTE)
@@ -285,7 +311,7 @@ std::string MipsGen::gen_text_section(SymbolTable *st, TypeIcgVec &instrs)
 
         else if (i->op_code == OP_GOTO)
         {
-            code += "j " + i->res + "\n";
+            code += "\tj " + i->res + "\n";
         }
 
         else if (i->op_code == OP_LBL)
@@ -409,7 +435,7 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
         
         if (loc->type == LOC_LIT)
         {
-            res->instrs.push_back(new MipsInstr("li " + reg->value + ", " + loc->value + "\n"));
+            res->instrs.push_back(new MipsInstr("\tli " + reg->value + ", " + loc->value + "\n"));
 
             // update register descriptor to include only loc
             this->rd->set_only_loc(reg->value, loc);
@@ -422,7 +448,7 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
         
         else /*if (loc->type != LOC_TMP)*/
         {
-            std::string s = "lw " + reg->value + ", ";
+            std::string s = "\tlw " + reg->value + ", ";
             if (loc->type == LOC_GBL)
             {
                 if (loc->is_array)
@@ -470,7 +496,7 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
                 {
                     if (loc->type == LOC_STK)
                     {
-                        res->instrs.push_back(new MipsInstr("sw " + reg->value + ", " + loc->to_key() + "\n"));
+                        res->instrs.push_back(new MipsInstr("\tsw " + reg->value + ", " + loc->to_key() + "\n"));
                     }
                     // std::string s = "sw " + reg->value + ", ";
                     // if (loc->type == LOC_GBL && loc->is_array)
@@ -499,12 +525,12 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
 
         if (loc->type == LOC_LIT)
         {
-            res->instrs.push_back(new MipsInstr("li " + reg->value + ", " + loc->value + "\n"));
+            res->instrs.push_back(new MipsInstr("\tli " + reg->value + ", " + loc->value + "\n"));
         }
 
         else if (loc->type != LOC_TMP)
         {
-            std::string s = "lw " + reg->value + ", ";
+            std::string s = "\tlw " + reg->value + ", ";
             // generate load
             if (loc->type == LOC_GBL)
             {
@@ -524,7 +550,7 @@ LocType *MipsGen::get_reg_i(LocType *loc, GetRegRes *res)
             }
             else
             {
-                res->instrs.push_back(new MipsInstr("lw " + reg->value + ", " + loc_key + "\n"));
+                res->instrs.push_back(new MipsInstr("\tlw " + reg->value + ", " + loc_key + "\n"));
             }
         }
 

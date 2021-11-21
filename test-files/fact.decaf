@@ -14,6 +14,7 @@ class Program
         return a * t;
     }
 
+    int read_int() { return 1; }
     void print_int(int a) {}
 
     void main()
@@ -21,7 +22,8 @@ class Program
         int x;
         int res;
 
-        x = 8;
+        x = read_int();
+
         res = fact(x);
 
         print_int(res);
